@@ -12,13 +12,12 @@ export class FoldersService {
   constructor(
     @InjectRepository(FolderEntity)
     private readonly folders: Repository<FolderEntity>,
-  ) {}
+  ) { }
 
   async create(
     ownerId: number,
     dto: { name: string; color?: string; parentId?: number },
   ) {
-    // If parentId given, verify it belongs to owner
     if (dto.parentId) {
       const parent = await this.folders.findOne({
         where: { id: dto.parentId, ownerId },
@@ -58,7 +57,6 @@ export class FoldersService {
     const folder = await this.folders.findOne({ where: { id, ownerId } });
     if (!folder) throw new NotFoundException('Folder not found');
 
-    // Collect all descendant IDs
     const allIds = [folder.id];
     for (let i = 0; i < allIds.length; i++) {
       const children = await this.folders.find({

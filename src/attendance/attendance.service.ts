@@ -1,4 +1,3 @@
-// Attendance Service: QR Token Generation, Validation, Status Management
 import {
   Injectable,
   BadRequestException,
@@ -28,17 +27,10 @@ export class AttendanceService {
     private responsesRepository: Repository<FormResponseEntity>,
     @InjectRepository(FormEntity)
     private formsRepository: Repository<FormEntity>,
-  ) {}
+  ) { }
 
   // ── QR Token Generation ──────────────────────────────────────────
 
-  /**
-   * Generate QR Token (JWT signed)
-   *
-   * RULE: JWT expiration = attendanceCloseTime
-   *       Fallback to eventEndTime if attendanceCloseTime is null
-   *       Default 24h if neither is set
-   */
   generateQRToken(
     responseId: string,
     formId: number,
@@ -50,8 +42,7 @@ export class AttendanceService {
       timestamp: Date.now(),
     };
 
-    // Calculate JWT expiration based on form timing
-    let expiresInSeconds: number = 86400; // Default 24h
+    let expiresInSeconds: number = 86400;
 
     const deadline = form.attendanceCloseTime || form.eventEndTime;
     if (deadline) {
@@ -75,11 +66,6 @@ export class AttendanceService {
   }
 
   // ── QR Token Verification ────────────────────────────────────────
-
-  /**
-   * Verify and decode QR Token
-   * @throws BadRequestException if token is invalid or expired
-   */
   verifyQRToken(qrToken: string): QRTokenPayload {
     try {
       const payload = this.jwtService.verify<QRTokenPayload>(qrToken, {
@@ -93,10 +79,6 @@ export class AttendanceService {
 
   // ── QR Code Image Generator ──────────────────────────────────────
 
-  /**
-   * Generate QR Code Image from token
-   * QR code contains ONLY the token string, never formData
-   */
   async generateQRCodeImage(qrToken: string): Promise<string> {
     try {
       const qrDataUrl = await QRCode.toDataURL(qrToken, {
@@ -114,14 +96,6 @@ export class AttendanceService {
 
   // ── Time Validation Engine ───────────────────────────────────────
 
-  /**
-   * Determine attendance status based on current time vs event timing
-   *
-   * Rules:
-   *   currentTime <= eventEndTime        → "present"
-   *   currentTime <= attendanceCloseTime → "late"
-   *   else                               → "rejected"
-   */
   validateAttendanceStatus(
     form: FormEntity,
     currentTime: Date = new Date(),
@@ -150,14 +124,7 @@ export class AttendanceService {
     return 'rejected';
   }
 
-  // ── Atomic Check-In (Race Condition Safe) ────────────────────────
 
-  /**
-   * Process check-in with ATOMIC update and audit logging
-   *
-   * CRITICAL: Uses UPDATE ... WHERE status = 'pending'
-   * Only the FIRST concurrent scan succeeds. All others get affected=0
-   */
   async processCheckIn(
     response: FormResponseEntity,
     form: FormEntity,
@@ -169,12 +136,11 @@ export class AttendanceService {
     scanLog: ScanLog;
     message: string;
   }> {
-    // ── Attendance must be enabled ──
+
     if (!form.attendanceEnabled) {
       throw new BadRequestException('Attendance tracking is not enabled for this form');
     }
 
-    // ── Duplicate detection (already scanned) ──
     if (response.status !== 'pending') {
       const duplicateLog: ScanLog = {
         timestamp: currentTime,
@@ -182,7 +148,6 @@ export class AttendanceService {
         deviceInfo,
       };
 
-      // Append duplicate log without changing status
       const logs = Array.isArray(response.scanLogs)
         ? [...response.scanLogs, duplicateLog]
         : [duplicateLog];
@@ -200,7 +165,6 @@ export class AttendanceService {
       };
     }
 
-    // ── First scan: Determine status from time rules ──
     const newStatus = this.validateAttendanceStatus(form, currentTime);
     const scanLog: ScanLog = {
       timestamp: currentTime,
@@ -212,7 +176,6 @@ export class AttendanceService {
       ? [...response.scanLogs, scanLog]
       : [scanLog];
 
-    // ── ATOMIC UPDATE: only succeeds if status is STILL 'pending' ──
     const updateResult = await this.responsesRepository.update(
       { id: response.id, status: 'pending' as AttendanceStatus },
       {
@@ -225,7 +188,6 @@ export class AttendanceService {
     const wasUpdated = (updateResult.affected ?? 0) > 0;
 
     if (!wasUpdated) {
-      // Another request already updated—fetch fresh status
       const current = await this.responsesRepository.findOne({
         where: { id: response.id },
       });
@@ -251,11 +213,6 @@ export class AttendanceService {
     };
   }
 
-  // ── Absent Calculation ───────────────────────────────────────────
-
-  /**
-   * Calculate effective status (e.g., pending → absent after close time)
-   */
   calculateEffectiveStatus(
     response: FormResponseEntity,
     form: FormEntity,
@@ -275,9 +232,6 @@ export class AttendanceService {
     return 'pending';
   }
 
-  /**
-   * Batch update: Mark all pending responses as absent after close time
-   */
   async markAbsentResponses(
     form: FormEntity,
     currentTime: Date = new Date(),
@@ -295,11 +249,6 @@ export class AttendanceService {
     return result.affected || 0;
   }
 
-  // ── Display Helper ──────────────────────────────────────────────
-
-  /**
-   * Format response formData for display: label + value pairs
-   */
   formatResponseData(
     response: FormResponseEntity,
   ): Array<{ questionId: string; label: string; value: string }> {

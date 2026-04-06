@@ -30,10 +30,9 @@ export class AttendanceController {
     private readonly responsesRepository: Repository<FormResponseEntity>,
     @InjectRepository(FormEntity)
     private readonly formsRepository: Repository<FormEntity>,
-  ) {}
+  ) { }
 
   // ── POST /attendance/scan ────────────────────────────────────────
-  // The main QR scan endpoint for event creators
   @UseGuards(JwtAuthGuard)
   @Post('scan')
   @HttpCode(200)
@@ -42,10 +41,8 @@ export class AttendanceController {
     @Body() dto: CheckinDto,
     @Req() req: Request,
   ) {
-    // 1. Verify JWT token from QR code
     const payload = this.attendanceService.verifyQRToken(dto.token);
 
-    // 2. Fetch response + form
     const response = await this.responsesRepository.findOne({
       where: { id: payload.responseId },
       relations: ['form'],
@@ -57,20 +54,16 @@ export class AttendanceController {
 
     const form = response.form;
 
-    // 3. ROLE-BASED ACCESS: only form owner can scan
     if (form.ownerId !== user.userId) {
       throw new ForbiddenException(
         'Only the form creator can check-in responses',
       );
     }
-
-    // 4. Device info for audit trail
     const deviceInfo = {
       userAgent: req.get?.('user-agent'),
       ipAddress: req.ip || req.socket?.remoteAddress,
     };
 
-    // 5. Process check-in (atomic update + time validation)
     const result = await this.attendanceService.processCheckIn(
       response,
       form,
@@ -78,10 +71,8 @@ export class AttendanceController {
       deviceInfo,
     );
 
-    // 6. Extract respondent info from formData
     const respondent = this.extractRespondentInfo(response);
 
-    // 7. Build formData key/value display
     const formDataDisplay: Record<string, any> = {};
     if (response.formData && typeof response.formData === 'object') {
       for (const [key, entry] of Object.entries(response.formData)) {
@@ -92,7 +83,6 @@ export class AttendanceController {
       }
     }
 
-    // 8. Build response
     return {
       success: ['present', 'late'].includes(result.status),
       status: result.status,
@@ -108,8 +98,6 @@ export class AttendanceController {
     };
   }
 
-  // ── GET /attendance/form/:formId/report ──────────────────────────
-  // Attendance report with absent calculation
   @UseGuards(JwtAuthGuard)
   @Get('form/:formId/report')
   async getReport(

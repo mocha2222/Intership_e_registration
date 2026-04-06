@@ -1,4 +1,3 @@
-// ENHANCED Form Entity with Attendance Timing
 import {
   Column,
   CreateDateColumn,
@@ -33,7 +32,6 @@ export class FormEntity {
   @Column({ type: 'json', nullable: true })
   schema!: unknown;
 
-  // ── Rich form data ──────────────────────────────────
   @Column({ type: 'varchar', length: 30, default: 'enabled' })
   status!: string;
 
@@ -58,44 +56,27 @@ export class FormEntity {
   @Column({ type: 'json', nullable: true })
   design!: unknown;
 
-  // ── Types & Features ────────────────────────────────
   @Column({ type: 'varchar', length: 30, default: 'form' })
-  type!: string; // form | attendance (legacy — kept for backward compat)
+  type!: string;
 
   @Column({ type: 'boolean', default: false })
   attendanceEnabled!: boolean;
 
-  // ── Submission Timing (ALL forms) ─────────────────────
   @Column({ type: 'datetime', nullable: true })
   submissionStartTime!: Date | null;
 
   @Column({ type: 'datetime', nullable: true })
   submissionEndTime!: Date | null;
 
-  // ── ATTENDANCE TIMING (NEW) ──────────────────────────
-  /**
-   * When the event/form starts
-   * Users can ONLY submit after this time
-   */
   @Column({ type: 'datetime', nullable: true })
   eventStartTime!: Date | null;
 
-  /**
-   * When the event ends
-   * Scans before this time = "present"
-   */
   @Column({ type: 'datetime', nullable: true })
   eventEndTime!: Date | null;
 
-  /**
-   * Extended deadline for late arrivals
-   * Scans between eventEndTime and attendanceCloseTime = "late"
-   * Scans after this time = "rejected"
-   */
   @Column({ type: 'datetime', nullable: true })
   attendanceCloseTime!: Date | null;
 
-  // ── State flags ─────────────────────────────────────
   @Index()
   @Column({ type: 'boolean', default: false })
   isPublished!: boolean;
@@ -109,7 +90,6 @@ export class FormEntity {
   @Column({ type: 'datetime', nullable: true })
   trashedAt!: Date | null;
 
-  // ── Access / Permissions ────────────────────────────
   @Column({ type: 'varchar', length: 20, default: 'public' })
   accessMode!: string;
 

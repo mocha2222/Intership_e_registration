@@ -15,7 +15,7 @@ export class FormsService {
   constructor(
     @InjectRepository(FormEntity)
     private readonly forms: Repository<FormEntity>,
-  ) {}
+  ) { }
 
   async create(ownerId: number, dto: CreateFormDto) {
     const entity = this.forms.create({
@@ -66,7 +66,6 @@ export class FormsService {
         qb.andWhere('f.trashedAt IS NOT NULL');
         break;
       case 'all':
-        // No extra filters, fetch everything for the owner
         break;
       case 'active':
       default:

@@ -1,4 +1,3 @@
-// Response Controller: Form submission + listing + deletion
 import {
   Controller,
   Post,
@@ -15,13 +14,8 @@ import type { CurrentUser as CurrentUserType } from '../common/decorators/curren
 
 @Controller('responses')
 export class ResponsesController {
-  constructor(private readonly responsesService: ResponsesService) {}
+  constructor(private readonly responsesService: ResponsesService) { }
 
-  /**
-   * POST /responses/:formId
-   * Public endpoint — submit a form response
-   * Returns: { id, formId, status, qrToken, submittedAt }
-   */
   @Post(':formId')
   async submit(
     @Param('formId') formId: string,
@@ -35,10 +29,6 @@ export class ResponsesController {
     return await this.responsesService.submit(Number(formId), body);
   }
 
-  /**
-   * GET /responses/form/:formId
-   * Owner-only: list all responses for a form
-   */
   @UseGuards(JwtAuthGuard)
   @Get('form/:formId')
   async listForOwner(
@@ -51,19 +41,11 @@ export class ResponsesController {
     );
   }
 
-  /**
-   * GET /responses/:responseId
-   * Get a single response with formatted formData
-   */
   @Get(':responseId')
   async getResponse(@Param('responseId') responseId: string) {
     return await this.responsesService.getResponse(responseId);
   }
 
-  /**
-   * DELETE /responses/:responseId
-   * Owner-only: delete a response
-   */
   @UseGuards(JwtAuthGuard)
   @Delete(':responseId')
   async deleteResponse(

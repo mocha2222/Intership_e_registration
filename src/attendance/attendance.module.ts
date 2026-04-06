@@ -10,7 +10,6 @@ import { AttendanceService } from './attendance.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([FormResponseEntity, FormEntity]),
-    // Re-register JwtModule so AttendanceService can inject JwtService
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -27,4 +26,4 @@ import { AttendanceService } from './attendance.service';
   providers: [AttendanceService],
   exports: [AttendanceService],
 })
-export class AttendanceModule {}
+export class AttendanceModule { }

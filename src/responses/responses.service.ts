@@ -21,19 +21,8 @@ export class ResponsesService {
     @InjectRepository(FormEntity)
     private readonly forms: Repository<FormEntity>,
     private readonly attendanceService: AttendanceService,
-  ) {}
+  ) { }
 
-  /**
-   * Submit a form response
-   *
-   * Flow:
-   * 1. Validate form exists and is published
-   * 2. Handle file uploads (base64 → disk)
-   * 3. Pack answers into formData format: { q1: { label, value } }
-   * 4. Generate signed JWT qrToken (exp = attendanceCloseTime || eventEndTime)
-   * 5. Save entity with status = 'pending'
-   * 6. Return response + qrToken for QR code rendering
-   */
   async submit(
     formId: number,
     dto: {
@@ -46,7 +35,7 @@ export class ResponsesService {
     if (!form || !form.isPublished)
       throw new NotFoundException('Form not found');
 
-    // ── Form Status & Submission time validation ──
+
     const now = new Date();
     if (form.status === 'disabled') {
       throw new BadRequestException('Form is currently disabled');
@@ -57,7 +46,7 @@ export class ResponsesService {
     if (form.submissionEndTime && now > new Date(form.submissionEndTime)) {
       throw new BadRequestException('Form submission deadline has passed');
     }
-    // ── Handle file uploads embedded as base64 ──
+
     const answers = dto.answers as Record<string, any>;
     const uploadDir = path.join(process.cwd(), 'uploads');
     await fs.mkdir(uploadDir, { recursive: true });
@@ -87,39 +76,32 @@ export class ResponsesService {
               }
             }
           } catch {
-            // ignore JSON parse error
           }
         }
       }
     }
 
-    // ── Build the formData payload ──
-    // If the frontend already sends the { label, value } format, use it directly.
-    // Otherwise fall back to raw answers for backward compatibility.
     const formData = dto.formData || null;
 
-    // ── Create entity ──
     const entity = this.responses.create({
       formId,
       formData: formData,
       status: 'pending',
       scanLogs: [],
-      // Temporary placeholder token—we need the saved entity's UUID first
+
       qrToken: crypto.randomBytes(32).toString('hex'),
     });
 
-    // Save to get the auto-generated UUID id
     const saved = await this.responses.save(entity);
 
-    // ── Generate the REAL qrToken (JWT signed with responseId + formId) ──
-    // exp = attendanceCloseTime, fallback eventEndTime, fallback 24h
+
     const qrToken = this.attendanceService.generateQRToken(
       saved.id,
       formId,
       form,
     );
 
-    // Update the entity with the real signed token
+
     saved.qrToken = qrToken;
     await this.responses.save(saved);
 
@@ -133,9 +115,7 @@ export class ResponsesService {
     };
   }
 
-  /**
-   * List responses for a form (owner only)
-   */
+
   async listForOwner(ownerId: number, formId: number) {
     const form = await this.forms.findOne({ where: { id: formId } });
     if (!form) throw new NotFoundException('Form not found');
@@ -148,9 +128,6 @@ export class ResponsesService {
     });
   }
 
-  /**
-   * Delete a single response (owner only)
-   */
   async deleteResponse(ownerId: number, responseId: string) {
     const response = await this.responses.findOne({
       where: { id: responseId },
@@ -167,9 +144,6 @@ export class ResponsesService {
     return { deleted: true };
   }
 
-  /**
-   * Get a single response with formatted display data
-   */
   async getResponse(responseId: string) {
     const response = await this.responses.findOne({
       where: { id: responseId },

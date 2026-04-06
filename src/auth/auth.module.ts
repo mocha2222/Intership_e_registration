@@ -19,7 +19,6 @@ import { GoogleCallbackGuard } from './guards/google-callback.guard';
       useFactory: (config: ConfigService) => ({
         secret: config.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
-          // jwt types expect `number | StringValue` (e.g. '7d', '1h'); prefer numeric seconds.
           expiresIn: Number(
             config.get<number>('JWT_EXPIRES_IN') ?? 60 * 60 * 24 * 7,
           ),
@@ -36,4 +35,4 @@ import { GoogleCallbackGuard } from './guards/google-callback.guard';
   ],
   controllers: [AuthController],
 })
-export class AuthModule {}
+export class AuthModule { }
