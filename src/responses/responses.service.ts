@@ -46,8 +46,11 @@ export class ResponsesService {
     if (!form || !form.isPublished)
       throw new NotFoundException('Form not found');
 
-    // ── Submission time validation ──
+    // ── Form Status & Submission time validation ──
     const now = new Date();
+    if (form.status === 'disabled') {
+      throw new BadRequestException('Form is currently disabled');
+    }
     if (form.submissionStartTime && now < new Date(form.submissionStartTime)) {
       throw new BadRequestException('Form is not open for submissions yet');
     }
