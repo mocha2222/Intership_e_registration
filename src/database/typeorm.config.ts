@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { join } from 'path';
 import { FormEntity } from '../entities/form.entity';
 import { FormResponseEntity } from '../entities/form-response.entity';
 import { UserEntity } from '../entities/user.entity';
@@ -20,7 +21,8 @@ export function typeormConfig(
     autoLoadEntities: false,
     synchronize: false,
     migrationsRun: false,
-    migrations: ['dist/database/migrations/*.js'],
+    // App runtime should only ever read compiled migrations.
+    migrations: [join(process.cwd(), 'dist/database/migrations/*.js')],
     logging: config.get<string>('DB_LOGGING') === 'true',
     charset: 'utf8mb4',
   };

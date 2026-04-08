@@ -44,6 +44,18 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Run with Docker Compose
+
+```bash
+# from e-registration/
+$ docker compose up --build
+```
+
+Services:
+
+- API: `http://localhost:3000`
+- MySQL: `localhost:3306`
+
 ## Run tests
 
 ```bash

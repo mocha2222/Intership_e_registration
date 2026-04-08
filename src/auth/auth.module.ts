@@ -29,7 +29,20 @@ import { GoogleCallbackGuard } from './guards/google-callback.guard';
   providers: [
     AuthService,
     JwtStrategy,
-    GoogleStrategy,
+    // Register GoogleStrategy only when Google env vars exist to avoid startup errors
+    {
+      provide: GoogleStrategy,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const clientID = config.get<string>('GOOGLE_CLIENT_ID');
+        const clientSecret = config.get<string>('GOOGLE_CLIENT_SECRET');
+        const callbackURL = config.get<string>('GOOGLE_CALLBACK_URL');
+        if (!clientID || !clientSecret || !callbackURL) {
+          return undefined;
+        }
+        return new GoogleStrategy(config);
+      },
+    },
     GoogleAuthGuard,
     GoogleCallbackGuard,
   ],
