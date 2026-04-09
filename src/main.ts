@@ -13,6 +13,7 @@ async function bootstrap() {
     origin: process.env.CORS_ORIGIN?.split(',').map((s) => s.trim()) ?? true,
     credentials: true,
   });
+  app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

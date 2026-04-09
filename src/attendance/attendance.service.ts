@@ -73,7 +73,7 @@ export class AttendanceService {
       });
       return payload;
     } catch {
-      throw new BadRequestException('Invalid or expired QR code');
+      throw new BadRequestException('Invalid QR code or attendance period has ended');
     }
   }
 
@@ -131,7 +131,7 @@ export class AttendanceService {
     currentTime: Date = new Date(),
     deviceInfo?: { userAgent?: string; ipAddress?: string },
   ): Promise<{
-    status: AttendanceStatus;
+    status: AttendanceStatus | 'duplicate';
     updated: boolean;
     scanLog: ScanLog;
     message: string;
@@ -158,10 +158,10 @@ export class AttendanceService {
       );
 
       return {
-        status: response.status,
+        status: 'duplicate',
         updated: false,
         scanLog: duplicateLog,
-        message: `Already checked in (status: ${response.status})`,
+        message: `Already checked in (Original Status: ${response.status})`,
       };
     }
 
@@ -202,7 +202,7 @@ export class AttendanceService {
     const messages: Record<string, string> = {
       present: 'Check-in successful — marked as present',
       late: 'Check-in successful — marked as late',
-      rejected: 'Check-in rejected — past attendance deadline',
+      rejected: 'Attendance period has ended. No further check-ins allowed.',
     };
 
     return {

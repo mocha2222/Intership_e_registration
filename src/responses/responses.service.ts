@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FormEntity } from '../entities/form.entity';
-import { FormResponseEntity } from '../entities/form-response.entity';
+import { FormResponseEntity, AttendanceStatus } from '../entities/form-response.entity';
 import { AttendanceService } from '../attendance/attendance.service';
 import * as fs from 'fs/promises';
 import * as crypto from 'crypto';
@@ -166,5 +166,30 @@ export class ResponsesService {
         ? { id: response.form.id, title: response.form.title }
         : null,
     };
+  }
+
+  async update(
+    ownerId: number,
+    responseId: string,
+    dto: {
+      status?: AttendanceStatus;
+      formData?: Record<string, { label: string; value: any }>;
+    },
+  ) {
+    const response = await this.responses.findOne({
+      where: { id: responseId },
+    });
+    if (!response) throw new NotFoundException('Response not found');
+
+    const form = await this.forms.findOne({
+      where: { id: response.formId },
+    });
+    if (!form || form.ownerId !== ownerId)
+      throw new ForbiddenException('Not allowed');
+
+    if (dto.status) response.status = dto.status;
+    if (dto.formData) response.formData = dto.formData;
+
+    return await this.responses.save(response);
   }
 }

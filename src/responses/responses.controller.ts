@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Delete,
+  Patch,
   UseGuards,
 } from '@nestjs/common';
 import { ResponsesService } from './responses.service';
@@ -56,5 +57,19 @@ export class ResponsesController {
       user.userId,
       responseId,
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':responseId')
+  async updateResponse(
+    @CurrentUser() user: CurrentUserType,
+    @Param('responseId') responseId: string,
+    @Body()
+    body: {
+      status?: any;
+      formData?: Record<string, { label: string; value: any }>;
+    },
+  ) {
+    return await this.responsesService.update(user.userId, responseId, body);
   }
 }

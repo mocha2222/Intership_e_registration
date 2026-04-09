@@ -20,7 +20,7 @@ export function typeormConfig(
     entities: [UserEntity, FormEntity, FormResponseEntity, FolderEntity, AttendanceEntity],
     autoLoadEntities: false,
     synchronize: false,
-    migrationsRun: false,
+    migrationsRun: true,
     // App runtime should only ever read compiled migrations.
     migrations: [join(process.cwd(), 'dist/database/migrations/*.js')],
     logging: config.get<string>('DB_LOGGING') === 'true',
