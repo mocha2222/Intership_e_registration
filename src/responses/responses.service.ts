@@ -48,7 +48,7 @@ export class ResponsesService {
     }
 
     const answers = dto.answers as Record<string, any>;
-    const uploadDir = path.join(process.cwd(), 'uploads');
+    const uploadDir = path.join(process.cwd(), 'uploads', String(formId), 'responses');
     await fs.mkdir(uploadDir, { recursive: true });
 
     if (answers && typeof answers === 'object') {
@@ -70,7 +70,7 @@ export class ResponsesService {
                 const buffer = Buffer.from(base64Parts[1], 'base64');
                 await fs.writeFile(path.join(uploadDir, filename), buffer);
                 answers[key] = JSON.stringify({
-                  fileUrl: `/uploads/${filename}`,
+                  fileUrl: `/uploads/${formId}/responses/${filename}`,
                   fileName: parsed.name || filename,
                 });
               }
@@ -82,6 +82,15 @@ export class ResponsesService {
     }
 
     const formData = dto.formData || null;
+
+    // Persist file paths in formData so the table view has them
+    if (formData && answers) {
+      for (const [key, val] of Object.entries(answers)) {
+        if (formData[key] && typeof val === 'string' && val.includes('"fileUrl":')) {
+          formData[key].value = val;
+        }
+      }
+    }
 
     const entity = this.responses.create({
       formId,

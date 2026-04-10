@@ -6,6 +6,7 @@ import { FormEntity } from '../entities/form.entity';
 import { FormResponseEntity } from '../entities/form-response.entity';
 import { FolderEntity } from '../entities/folder.entity';
 import { AttendanceEntity } from '../entities/attendance.entity';
+import { FormMaterialEntity } from '../entities/form-material.entity';
 
 dotenv.config();
 
@@ -18,7 +19,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [UserEntity, FormEntity, FormResponseEntity, FolderEntity, AttendanceEntity],
+  entities: [UserEntity, FormEntity, FormResponseEntity, FolderEntity, AttendanceEntity, FormMaterialEntity],
   migrations: [
     isTypeScriptRuntime
       ? join(process.cwd(), 'src/database/migrations/*.ts')

@@ -9,6 +9,9 @@ import { IsNull, LessThan, Not, Repository } from 'typeorm';
 import { FormEntity } from '../entities/form.entity';
 import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class FormsService {
@@ -92,6 +95,33 @@ export class FormsService {
     return form;
   }
 
+  async processBase64Image(base64Str: string, formId: number): Promise<string> {
+    if (!base64Str || !base64Str.startsWith('data:image/')) return base64Str;
+    const base64Parts = base64Str.split('base64,');
+    if (base64Parts.length !== 2) return base64Str;
+
+    const extMatch = base64Str.match(/^data:image\/([a-zA-Z0-9]+);/);
+    const ext = extMatch ? extMatch[1] : 'png';
+    const uploadDir = path.join(process.cwd(), 'uploads', String(formId), 'admin');
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    const filename = `${crypto.randomBytes(16).toString('hex')}.${ext}`;
+    const buffer = Buffer.from(base64Parts[1], 'base64');
+    await fs.writeFile(path.join(uploadDir, filename), buffer);
+
+    return `/uploads/${formId}/admin/${filename}`;
+  }
+
+  async deleteOldImage(url: string | null | undefined) {
+    if (!url || !url.startsWith('/uploads/')) return;
+    try {
+      const filePath = path.join(process.cwd(), url);
+      await fs.unlink(filePath);
+    } catch (e) {
+      // Ignore if file doesn't exist
+    }
+  }
+
   async updateMine(ownerId: number, id: number, dto: UpdateFormDto) {
     const form = await this.getMine(ownerId, id);
 
@@ -104,10 +134,73 @@ export class FormsService {
     if (dto.layoutType !== undefined) form.layoutType = dto.layoutType;
     if (dto.folderKey !== undefined) form.folderKey = dto.folderKey;
     if (dto.label !== undefined) form.label = dto.label ?? null;
-    if (dto.pages !== undefined) form.pages = dto.pages;
+
+    if (dto.pages !== undefined) {
+      const oldImageUrls = new Set<string>();
+      const oldPages = (form.pages as any[]) || [];
+      for (const page of oldPages) {
+        if (page.elements) {
+          for (const el of page.elements) {
+            if (el.type === 'image' && typeof el.settings?.url === 'string' && el.settings.url.startsWith('/uploads/')) {
+              oldImageUrls.add(el.settings.url);
+            }
+          }
+        }
+      }
+
+      const newImageUrls = new Set<string>();
+      for (const page of dto.pages) {
+        if (page.elements) {
+          for (const el of page.elements) {
+            if (el.type === 'image' && el.settings?.url && typeof el.settings.url === 'string') {
+              if (el.settings.url.startsWith('data:image/')) {
+                el.settings.url = await this.processBase64Image(el.settings.url, form.id);
+              }
+              newImageUrls.add(el.settings.url);
+            }
+          }
+        }
+      }
+
+      for (const oldUrl of oldImageUrls) {
+        if (!newImageUrls.has(oldUrl)) {
+          await this.deleteOldImage(oldUrl);
+        }
+      }
+      form.pages = dto.pages;
+    }
+
     if (dto.nextElementId !== undefined) form.nextElementId = dto.nextElementId;
-    if (dto.logoUrl !== undefined) form.logoUrl = dto.logoUrl ?? null;
-    if (dto.design !== undefined) form.design = dto.design;
+    
+    if (dto.logoUrl !== undefined) {
+      if (form.logoUrl && dto.logoUrl !== form.logoUrl) {
+        await this.deleteOldImage(form.logoUrl);
+      }
+      form.logoUrl = dto.logoUrl ? await this.processBase64Image(dto.logoUrl, form.id) : null;
+    }
+
+    if (dto.design !== undefined) {
+      const oldDesign = (form.design as Record<string, any>) || {};
+      
+      if (dto.design.pageBgImage !== undefined) {
+        if (oldDesign.pageBgImage && dto.design.pageBgImage !== oldDesign.pageBgImage) {
+          await this.deleteOldImage(oldDesign.pageBgImage);
+        }
+        if (dto.design.pageBgImage) {
+          dto.design.pageBgImage = await this.processBase64Image(dto.design.pageBgImage, form.id);
+        }
+      }
+      
+      if (dto.design.formBgImage !== undefined) {
+        if (oldDesign.formBgImage && dto.design.formBgImage !== oldDesign.formBgImage) {
+          await this.deleteOldImage(oldDesign.formBgImage);
+        }
+        if (dto.design.formBgImage) {
+          dto.design.formBgImage = await this.processBase64Image(dto.design.formBgImage, form.id);
+        }
+      }
+      form.design = dto.design;
+    }
     if (dto.isFavorite !== undefined) form.isFavorite = dto.isFavorite;
     if (dto.isArchived !== undefined) form.isArchived = dto.isArchived;
     if (dto.accessMode !== undefined) form.accessMode = dto.accessMode;
@@ -170,6 +263,10 @@ export class FormsService {
       }
     }
 
+    // ── Material Upload ──
+    if (dto.materialUploadEnabled !== undefined)
+      form.materialUploadEnabled = dto.materialUploadEnabled;
+
     return await this.forms.save(form);
   }
 
@@ -207,6 +304,12 @@ export class FormsService {
 
   async permanentDelete(ownerId: number, id: number) {
     const form = await this.getMine(ownerId, id);
+    
+    try {
+      const uploadDir = path.join(process.cwd(), 'uploads', String(form.id));
+      await fs.rm(uploadDir, { recursive: true, force: true });
+    } catch (e) {}
+
     await this.forms.remove(form);
     return { deleted: true };
   }
@@ -218,8 +321,23 @@ export class FormsService {
   async purgeOldTrash() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    await this.forms.delete({
-      trashedAt: LessThan(thirtyDaysAgo),
+    
+    const oldForms = await this.forms.find({
+      where: { trashedAt: LessThan(thirtyDaysAgo) },
+      select: ['id'],
     });
+
+    for (const f of oldForms) {
+      try {
+        const uploadDir = path.join(process.cwd(), 'uploads', String(f.id));
+        await fs.rm(uploadDir, { recursive: true, force: true });
+      } catch (e) {}
+    }
+
+    if (oldForms.length > 0) {
+      await this.forms.delete({
+        trashedAt: LessThan(thirtyDaysAgo),
+      });
+    }
   }
 }

@@ -120,4 +120,9 @@ export class UpdateFormDto {
   @IsOptional()
   @IsString()
   attendanceCloseTime?: string | null;
+
+  // ── Material Upload ──
+  @IsOptional()
+  @IsBoolean()
+  materialUploadEnabled?: boolean;
 }

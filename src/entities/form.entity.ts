@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { FormResponseEntity } from './form-response.entity';
+import { FormMaterialEntity } from './form-material.entity';
 
 @Entity('forms')
 export class FormEntity {
@@ -96,8 +97,14 @@ export class FormEntity {
   @Column({ type: 'varchar', length: 30, default: 'submit_and_view' })
   permissionMode!: string;
 
+  @Column({ type: 'boolean', default: false })
+  materialUploadEnabled!: boolean;
+
   @OneToMany(() => FormResponseEntity, (r) => r.form)
   responses!: FormResponseEntity[];
+
+  @OneToMany(() => FormMaterialEntity, (m) => m.form)
+  materials!: FormMaterialEntity[];
 
   @CreateDateColumn()
   createdAt!: Date;

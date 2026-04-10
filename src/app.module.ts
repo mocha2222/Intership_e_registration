@@ -7,6 +7,7 @@ import { FormsModule } from './forms/forms.module';
 import { ResponsesModule } from './responses/responses.module';
 import { FoldersModule } from './folders/folders.module';
 import { AttendanceModule } from './attendance/attendance.module';
+import { MaterialsModule } from './materials/materials.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeormConfig } from './database/typeorm.config';
@@ -33,6 +34,7 @@ import { join } from 'path';
     ResponsesModule,
     FoldersModule,
     AttendanceModule,
+    MaterialsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
