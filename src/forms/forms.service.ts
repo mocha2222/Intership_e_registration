@@ -92,7 +92,17 @@ export class FormsService {
     const form = await this.forms.findOne({ where: { id } });
     if (!form) throw new NotFoundException('Form not found');
     if (!form.isPublished) throw new NotFoundException('Form not found');
-    return form;
+    
+    // Get current response count
+    const submissionCount = await this.forms.manager
+      .createQueryBuilder('form_responses', 'r')
+      .where('r.formId = :id', { id })
+      .getCount();
+
+    return {
+      ...form,
+      submissionCount
+    };
   }
 
   async processBase64Image(base64Str: string, formId: number): Promise<string> {
@@ -266,6 +276,11 @@ export class FormsService {
     // ── Material Upload ──
     if (dto.materialUploadEnabled !== undefined)
       form.materialUploadEnabled = dto.materialUploadEnabled;
+
+    // ── Status Expiration & Limits ──
+    if (dto.expirationDate !== undefined) form.expirationDate = dto.expirationDate;
+    if (dto.expirationTime !== undefined) form.expirationTime = dto.expirationTime;
+    if (dto.submissionLimit !== undefined) form.submissionLimit = dto.submissionLimit;
 
     return await this.forms.save(form);
   }

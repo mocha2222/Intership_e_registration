@@ -125,4 +125,16 @@ export class UpdateFormDto {
   @IsOptional()
   @IsBoolean()
   materialUploadEnabled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  expirationDate?: string | null;
+
+  @IsOptional()
+  @IsString()
+  expirationTime?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  submissionLimit?: number | null;
 }

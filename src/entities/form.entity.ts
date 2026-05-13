@@ -100,6 +100,15 @@ export class FormEntity {
   @Column({ type: 'boolean', default: false })
   materialUploadEnabled!: boolean;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  expirationDate!: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  expirationTime!: string | null;
+
+  @Column({ type: 'int', nullable: true })
+  submissionLimit!: number | null;
+
   @OneToMany(() => FormResponseEntity, (r) => r.form)
   responses!: FormResponseEntity[];
 
