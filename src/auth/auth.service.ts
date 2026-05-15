@@ -1,23 +1,41 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
+import { OtpEntity } from '../entities/otp.entity';
+import { MailService } from '../mail/mail.service';
+
+const OTP_EXPIRY_MINUTES = 10;
+const OTP_MAX_ATTEMPTS = 5;
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwt: JwtService,
+    @InjectRepository(OtpEntity)
+    private readonly otpRepo: Repository<OtpEntity>,
+    private readonly mailService: MailService,
   ) {}
 
   private signAccessToken(user: { id: number; email: string }) {
     return this.jwt.sign({ sub: user.id, email: user.email });
   }
 
+  // ─── Generate a 6-digit numeric OTP ───────────────────────────────────────
+  private generateOtpCode(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  // ─── Register ─────────────────────────────────────────────────────────────
   async register(dto: { email: string; password: string; name?: string }) {
     const existing = await this.usersService.findByEmail(dto.email);
     if (existing) throw new ConflictException('Email already in use');
@@ -42,6 +60,7 @@ export class AuthService {
     };
   }
 
+  // ─── Login ────────────────────────────────────────────────────────────────
   async login(dto: { email: string; password: string }) {
     const user = await this.usersService.findByEmail(dto.email);
     if (!user?.passwordHash)
@@ -61,6 +80,7 @@ export class AuthService {
     };
   }
 
+  // ─── Google Login ─────────────────────────────────────────────────────────
   async loginWithGoogle(googleUser: {
     googleId: string;
     email: string | null;
@@ -102,5 +122,114 @@ export class AuthService {
         language: user.language,
       },
     };
+  }
+
+  // ─── Forgot Password: Send OTP ────────────────────────────────────────────
+  async sendPasswordResetOtp(email: string): Promise<{ message: string }> {
+    // Always return success to prevent email enumeration attacks
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      return { message: 'If this email is registered, an OTP has been sent.' };
+    }
+
+    // Remove any existing OTPs for this email
+    await this.otpRepo.delete({ email });
+
+    // Generate new OTP
+    const code = this.generateOtpCode();
+    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+
+    // Hash the code before saving to DB
+    const hashedCode = await bcrypt.hash(code, 10);
+
+    const otp = this.otpRepo.create({ email, code: hashedCode, expiresAt });
+    await this.otpRepo.save(otp);
+
+    // Send original code via email
+    await this.mailService.sendPasswordResetOtp(email, code);
+
+    return { message: 'If this email is registered, an OTP has been sent.' };
+  }
+
+  // ─── Verify OTP ───────────────────────────────────────────────────────────
+  async verifyOtp(email: string, code: string): Promise<{ valid: boolean }> {
+    const otp = await this.otpRepo.findOne({
+      where: { email, used: false },
+      order: { createdAt: 'DESC' },
+    });
+
+    if (!otp) throw new BadRequestException('Invalid or expired OTP.');
+
+    if (otp.attempts >= OTP_MAX_ATTEMPTS) {
+      await this.otpRepo.delete({ email });
+      throw new BadRequestException(
+        'Too many failed attempts. Please request a new OTP.',
+      );
+    }
+
+    if (new Date() > otp.expiresAt) {
+      await this.otpRepo.delete({ email });
+      throw new BadRequestException('OTP has expired. Please request a new one.');
+    }
+
+    const isCodeValid = await bcrypt.compare(code, otp.code);
+    if (!isCodeValid) {
+      otp.attempts += 1;
+      await this.otpRepo.save(otp);
+      const remaining = OTP_MAX_ATTEMPTS - otp.attempts;
+      throw new BadRequestException(
+        `Incorrect OTP. ${remaining} attempt(s) remaining.`,
+      );
+    }
+
+    // OTP is valid — do NOT mark as used yet; wait for password reset
+    return { valid: true };
+  }
+
+  // ─── Reset Password ───────────────────────────────────────────────────────
+  async resetPassword(
+    email: string,
+    code: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const otp = await this.otpRepo.findOne({
+      where: { email, used: false },
+      order: { createdAt: 'DESC' },
+    });
+
+    if (!otp) throw new BadRequestException('Invalid or expired OTP.');
+
+    if (otp.attempts >= OTP_MAX_ATTEMPTS) {
+      await this.otpRepo.delete({ email });
+      throw new BadRequestException(
+        'Too many failed attempts. Please request a new OTP.',
+      );
+    }
+
+    if (new Date() > otp.expiresAt) {
+      await this.otpRepo.delete({ email });
+      throw new BadRequestException('OTP has expired. Please request a new one.');
+    }
+
+    const isCodeValid = await bcrypt.compare(code, otp.code);
+    if (!isCodeValid) {
+      otp.attempts += 1;
+      await this.otpRepo.save(otp);
+      throw new BadRequestException('Invalid OTP. Please try again.');
+    }
+
+    // Find user
+    const user = await this.usersService.findByEmail(email);
+    if (!user) throw new NotFoundException('User not found.');
+
+    // Hash and update password
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    user.passwordHash = passwordHash;
+    await this.usersService.save(user);
+
+    // Invalidate the OTP
+    await this.otpRepo.delete({ email });
+
+    return { message: 'Password has been reset successfully.' };
   }
 }
