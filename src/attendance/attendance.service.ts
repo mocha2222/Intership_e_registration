@@ -42,9 +42,9 @@ export class AttendanceService {
       timestamp: Date.now(),
     };
 
-    let expiresInSeconds: number = 86400;
+    let expiresInSeconds: number = 365 * 86400; // Default 1 year if no close time
 
-    const deadline = form.attendanceCloseTime || form.eventEndTime;
+    const deadline = form.attendanceCloseTime;
     if (deadline) {
       const deadlineTime = new Date(deadline);
       const nowSeconds = Math.floor(Date.now() / 1000);
@@ -107,21 +107,21 @@ export class AttendanceService {
 
     const scanTime = new Date(currentTime);
 
-    if (form.eventEndTime) {
-      const endTime = new Date(form.eventEndTime);
-      if (scanTime <= endTime) {
-        return 'present';
+    if (form.attendanceCloseTime) {
+      const closeTime = new Date(form.attendanceCloseTime);
+      if (scanTime > closeTime) {
+        return 'rejected';
       }
     }
 
-    if (form.attendanceCloseTime) {
-      const closeTime = new Date(form.attendanceCloseTime);
-      if (scanTime <= closeTime) {
+    if (form.eventEndTime) {
+      const lateDeadline = new Date(form.eventEndTime);
+      if (scanTime > lateDeadline) {
         return 'late';
       }
     }
 
-    return 'rejected';
+    return 'present';
   }
 
 
