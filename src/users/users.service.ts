@@ -1,14 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../entities/user.entity';
+import { FormEntity } from '../entities/form.entity';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly users: Repository<UserEntity>,
+    @InjectRepository(FormEntity)
+    private readonly forms: Repository<FormEntity>,
   ) {}
+
+  async findAll() {
+    return await this.users.find({
+      select: ['id', 'email', 'name', 'createdAt'],
+      order: { createdAt: 'DESC' },
+    });
+  }
 
   async findById(id: number) {
     const user = await this.users.findOne({ where: { id } });
@@ -43,6 +56,33 @@ export class UsersService {
     return await this.users.save(entity);
   }
 
+  async delete(id: number) {
+    const existing = await this.users.findOne({ where: { id }, select: ['id'] });
+    if (!existing) throw new NotFoundException('User not found');
+
+    const ownedForms = await this.forms.find({
+      where: { ownerId: id },
+      select: ['id'],
+    });
+    const formIds = ownedForms.map((f) => f.id);
+
+    await this.users.manager.transaction(async (manager) => {
+      // Safety fallback: remove user-owned forms directly even if DB FK cascade is missing.
+      await manager.getRepository(FormEntity).delete({ ownerId: id });
+      await manager.getRepository(UserEntity).delete(id);
+    });
+
+    // Database cascade does not delete files on disk; clean per-form upload folders explicitly.
+    for (const formId of formIds) {
+      const uploadDir = path.join(process.cwd(), 'uploads', String(formId));
+      try {
+        await fs.rm(uploadDir, { recursive: true, force: true });
+      } catch (e) {
+        // Ignore filesystem cleanup failures to keep user deletion successful.
+      }
+    }
+  }
+
   async updateProfile(
     userId: number,
     data: {
@@ -63,6 +103,25 @@ export class UsersService {
       user.organizationName = data.organizationName;
     if (data.language !== undefined) user.language = data.language;
     return await this.users.save(user);
+  }
+
+  async changePassword(userId: number, oldPassword: string, newPassword: string) {
+    const user = await this.findById(userId);
+
+    if (!user.passwordHash) {
+      throw new BadRequestException('This account does not have a password.');
+    }
+
+    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.passwordHash);
+    if (!isOldPasswordValid) {
+      throw new BadRequestException('Current password is incorrect.');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    user.passwordHash = passwordHash;
+    await this.users.save(user);
+
+    return { message: 'Password updated successfully.' };
   }
 
   async save(user: UserEntity) {

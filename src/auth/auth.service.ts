@@ -12,6 +12,7 @@ import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { OtpEntity } from '../entities/otp.entity';
 import { MailService } from '../mail/mail.service';
+import { ConfigService } from '@nestjs/config';
 
 const OTP_EXPIRY_MINUTES = 10;
 const OTP_MAX_ATTEMPTS = 5;
@@ -24,10 +25,39 @@ export class AuthService {
     @InjectRepository(OtpEntity)
     private readonly otpRepo: Repository<OtpEntity>,
     private readonly mailService: MailService,
+    private readonly config: ConfigService,
   ) {}
 
   private signAccessToken(user: { id: number; email: string }) {
     return this.jwt.sign({ sub: user.id, email: user.email });
+  }
+
+  private signAdminAccessToken(email: string) {
+    return this.jwt.sign({ sub: 0, email, role: 'superadmin' });
+  }
+
+  // ─── Admin Login ──────────────────────────────────────────────────────────
+  async adminLogin(dto: { email: string; password: string }) {
+    const adminEmail = this.config.get<string>('ADMIN_EMAIL');
+    const adminPassword = this.config.get<string>('ADMIN_PASSWORD');
+
+    if (!adminEmail || !adminPassword) {
+      throw new UnauthorizedException('Admin credentials not configured');
+    }
+
+    if (dto.email !== adminEmail || dto.password !== adminPassword) {
+      throw new UnauthorizedException('Invalid admin credentials');
+    }
+
+    return {
+      accessToken: this.signAdminAccessToken(dto.email),
+      user: {
+        id: 0,
+        email: dto.email,
+        name: 'Super Admin',
+        role: 'superadmin',
+      },
+    };
   }
 
   // ─── Generate a 6-digit numeric OTP ───────────────────────────────────────
@@ -62,6 +92,22 @@ export class AuthService {
 
   // ─── Login ────────────────────────────────────────────────────────────────
   async login(dto: { email: string; password: string }) {
+    // Check if admin credentials match first
+    const adminEmail = this.config.get<string>('ADMIN_EMAIL');
+    const adminPassword = this.config.get<string>('ADMIN_PASSWORD');
+    if (adminEmail && adminPassword && dto.email === adminEmail && dto.password === adminPassword) {
+      return {
+        accessToken: this.signAdminAccessToken(dto.email),
+        user: {
+          id: 0,
+          email: dto.email,
+          name: 'Super Admin',
+          role: 'superadmin',
+        },
+      };
+    }
+
+    // Normal user login
     const user = await this.usersService.findByEmail(dto.email);
     if (!user?.passwordHash)
       throw new UnauthorizedException('Invalid credentials');
