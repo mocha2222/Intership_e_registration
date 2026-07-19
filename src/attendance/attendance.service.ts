@@ -42,22 +42,8 @@ export class AttendanceService {
       timestamp: Date.now(),
     };
 
-    let expiresInSeconds: number = 365 * 86400; // Default 1 year if no close time
-
-    const deadline = form.attendanceCloseTime;
-    if (deadline) {
-      const deadlineTime = new Date(deadline);
-      const nowSeconds = Math.floor(Date.now() / 1000);
-      const deadlineSeconds = Math.floor(deadlineTime.getTime() / 1000);
-      const secondsUntilDeadline = deadlineSeconds - nowSeconds;
-
-      if (secondsUntilDeadline > 0) {
-        expiresInSeconds = secondsUntilDeadline;
-      } else {
-        // Already past deadline, set short expiration (1 minute)
-        expiresInSeconds = 60;
-      }
-    }
+    // Generic 1 year expiration - deadline validation happens at scan time
+    const expiresInSeconds: number = 365 * 86400; // 1 year
 
     return this.jwtService.sign(payload, {
       expiresIn: expiresInSeconds,
@@ -73,7 +59,7 @@ export class AttendanceService {
       });
       return payload;
     } catch {
-      throw new BadRequestException('Invalid QR code or attendance period has ended');
+      throw new BadRequestException('Invalid QR code');
     }
   }
 
