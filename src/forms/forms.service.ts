@@ -97,7 +97,17 @@ export class FormsService {
     const form = await this.forms.findOne({ where: { shareToken } });
     if (!form) throw new NotFoundException('Form not found');
     if (!form.isPublished) throw new NotFoundException('Form not found');
-    return form;
+
+    // Get current response count
+    const submissionCount = await this.forms.manager
+      .createQueryBuilder('form_responses', 'r')
+      .where('r.formId = :id', { id })
+      .getCount();
+
+    return {
+      ...form,
+      submissionCount
+    };
   }
 
   async processBase64Image(base64Str: string, formId: number): Promise<string> {
@@ -146,7 +156,7 @@ export class FormsService {
       for (const page of oldPages) {
         if (page.elements) {
           for (const el of page.elements) {
-            if (el.type === 'image' && typeof el.settings?.url === 'string' && el.settings.url.startsWith('/uploads/')) {
+            if ((el.type === 'image' || el.type === 'logobanner') && typeof el.settings?.url === 'string' && el.settings.url.startsWith('/uploads/')) {
               oldImageUrls.add(el.settings.url);
             }
           }
@@ -157,9 +167,11 @@ export class FormsService {
       for (const page of dto.pages) {
         if (page.elements) {
           for (const el of page.elements) {
-            if (el.type === 'image' && el.settings?.url && typeof el.settings.url === 'string') {
+            // Process both 'image' and 'logobanner' element types
+            if ((el.type === 'image' || el.type === 'logobanner') && el.settings?.url && typeof el.settings.url === 'string') {
               if (el.settings.url.startsWith('data:image/')) {
                 el.settings.url = await this.processBase64Image(el.settings.url, form.id);
+                el.settings.imageUrl = el.settings.url;
               }
               newImageUrls.add(el.settings.url);
             }
@@ -176,7 +188,7 @@ export class FormsService {
     }
 
     if (dto.nextElementId !== undefined) form.nextElementId = dto.nextElementId;
-    
+
     if (dto.logoUrl !== undefined) {
       if (form.logoUrl && dto.logoUrl !== form.logoUrl) {
         await this.deleteOldImage(form.logoUrl);
@@ -186,7 +198,7 @@ export class FormsService {
 
     if (dto.design !== undefined) {
       const oldDesign = (form.design as Record<string, any>) || {};
-      
+
       if (dto.design.pageBgImage !== undefined) {
         if (oldDesign.pageBgImage && dto.design.pageBgImage !== oldDesign.pageBgImage) {
           await this.deleteOldImage(oldDesign.pageBgImage);
@@ -195,7 +207,7 @@ export class FormsService {
           dto.design.pageBgImage = await this.processBase64Image(dto.design.pageBgImage, form.id);
         }
       }
-      
+
       if (dto.design.formBgImage !== undefined) {
         if (oldDesign.formBgImage && dto.design.formBgImage !== oldDesign.formBgImage) {
           await this.deleteOldImage(oldDesign.formBgImage);
@@ -272,6 +284,11 @@ export class FormsService {
     if (dto.materialUploadEnabled !== undefined)
       form.materialUploadEnabled = dto.materialUploadEnabled;
 
+    // ── Status Expiration & Limits ──
+    if (dto.expirationDate !== undefined) form.expirationDate = dto.expirationDate;
+    if (dto.expirationTime !== undefined) form.expirationTime = dto.expirationTime;
+    if (dto.submissionLimit !== undefined) form.submissionLimit = dto.submissionLimit;
+
     return await this.forms.save(form);
   }
 
@@ -309,11 +326,11 @@ export class FormsService {
 
   async permanentDelete(ownerId: number, id: number) {
     const form = await this.getMine(ownerId, id);
-    
+
     try {
       const uploadDir = path.join(process.cwd(), 'uploads', String(form.id));
       await fs.rm(uploadDir, { recursive: true, force: true });
-    } catch (e) {}
+    } catch (e) { }
 
     await this.forms.remove(form);
     return { deleted: true };
@@ -326,7 +343,7 @@ export class FormsService {
   async purgeOldTrash() {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const oldForms = await this.forms.find({
       where: { trashedAt: LessThan(thirtyDaysAgo) },
       select: ['id'],
@@ -336,7 +353,7 @@ export class FormsService {
       try {
         const uploadDir = path.join(process.cwd(), 'uploads', String(f.id));
         await fs.rm(uploadDir, { recursive: true, force: true });
-      } catch (e) {}
+      } catch (e) { }
     }
 
     if (oldForms.length > 0) {

@@ -42,22 +42,8 @@ export class AttendanceService {
       timestamp: Date.now(),
     };
 
-    let expiresInSeconds: number = 86400;
-
-    const deadline = form.attendanceCloseTime || form.eventEndTime;
-    if (deadline) {
-      const deadlineTime = new Date(deadline);
-      const nowSeconds = Math.floor(Date.now() / 1000);
-      const deadlineSeconds = Math.floor(deadlineTime.getTime() / 1000);
-      const secondsUntilDeadline = deadlineSeconds - nowSeconds;
-
-      if (secondsUntilDeadline > 0) {
-        expiresInSeconds = secondsUntilDeadline;
-      } else {
-        // Already past deadline, set short expiration (1 minute)
-        expiresInSeconds = 60;
-      }
-    }
+    // Generic 1 year expiration - deadline validation happens at scan time
+    const expiresInSeconds: number = 365 * 86400; // 1 year
 
     return this.jwtService.sign(payload, {
       expiresIn: expiresInSeconds,
@@ -73,7 +59,7 @@ export class AttendanceService {
       });
       return payload;
     } catch {
-      throw new BadRequestException('Invalid QR code or attendance period has ended');
+      throw new BadRequestException('Invalid QR code');
     }
   }
 
@@ -107,21 +93,21 @@ export class AttendanceService {
 
     const scanTime = new Date(currentTime);
 
-    if (form.eventEndTime) {
-      const endTime = new Date(form.eventEndTime);
-      if (scanTime <= endTime) {
-        return 'present';
+    if (form.attendanceCloseTime) {
+      const closeTime = new Date(form.attendanceCloseTime);
+      if (scanTime > closeTime) {
+        return 'rejected';
       }
     }
 
-    if (form.attendanceCloseTime) {
-      const closeTime = new Date(form.attendanceCloseTime);
-      if (scanTime <= closeTime) {
+    if (form.eventEndTime) {
+      const lateDeadline = new Date(form.eventEndTime);
+      if (scanTime > lateDeadline) {
         return 'late';
       }
     }
 
-    return 'rejected';
+    return 'present';
   }
 
 

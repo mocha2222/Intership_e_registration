@@ -41,6 +41,36 @@ export class ResponsesService {
     if (form.status === 'disabled') {
       throw new BadRequestException('Form is currently disabled');
     }
+
+    // ── Check Expiration Date/Time ──
+    if (form.status === 'disable_date' || form.status === 'disable_both') {
+      if (form.expirationDate) {
+        let expStr = form.expirationDate;
+        if (form.expirationTime) {
+          // Convert "12:15 PM" to 24h format for parsing
+          const [time, modifier] = form.expirationTime.split(' ');
+          let [hours, minutes] = time.split(':');
+          if (hours === '12') hours = '00';
+          if (modifier === 'PM') hours = (parseInt(hours, 10) + 12).toString();
+          expStr += `T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`;
+        }
+        const expDate = new Date(expStr);
+        if (now > expDate) {
+          throw new BadRequestException('Form has reached its expiration date');
+        }
+      }
+    }
+
+    // ── Check Submission Limit ──
+    if (form.status === 'disable_limit' || form.status === 'disable_both') {
+      if (form.submissionLimit) {
+        const count = await this.responses.count({ where: { formId } });
+        if (count >= form.submissionLimit) {
+          throw new BadRequestException('Form has reached its submission limit');
+        }
+      }
+    }
+
     if (form.submissionStartTime && now < new Date(form.submissionStartTime)) {
       throw new BadRequestException('Form is not open for submissions yet');
     }

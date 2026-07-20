@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
@@ -9,10 +10,14 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { GoogleCallbackGuard } from './guards/google-callback.guard';
+import { OtpEntity } from '../entities/otp.entity';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
     UsersModule,
+    MailModule,
+    TypeOrmModule.forFeature([OtpEntity]),
     PassportModule.register({ session: false }),
     JwtModule.registerAsync({
       inject: [ConfigService],
