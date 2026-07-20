@@ -20,8 +20,13 @@ export class FormsService {
     private readonly forms: Repository<FormEntity>,
   ) { }
 
+  private generateShareToken(): string {
+    return crypto.randomBytes(24).toString('hex');
+  }
+
   async create(ownerId: number, dto: CreateFormDto) {
     const entity = this.forms.create({
+      shareToken: this.generateShareToken(),
       ownerId,
       title: dto.title,
       description: dto.description ?? null,
@@ -88,8 +93,8 @@ export class FormsService {
     return form;
   }
 
-  async getPublic(id: number) {
-    const form = await this.forms.findOne({ where: { id } });
+  async getPublic(shareToken: string) {
+    const form = await this.forms.findOne({ where: { shareToken } });
     if (!form) throw new NotFoundException('Form not found');
     if (!form.isPublished) throw new NotFoundException('Form not found');
     return form;

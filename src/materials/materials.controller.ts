@@ -29,9 +29,9 @@ export class MaterialsController {
     return await this.materialsService.upload(user.userId, Number(id), files);
   }
 
-  @Get(':id/materials')
-  async list(@Param('id') id: string) {
-    return await this.materialsService.listByForm(Number(id));
+  @Get(':shareToken/materials')
+  async list(@Param('shareToken') shareToken: string) {
+    return await this.materialsService.listByForm(shareToken);
   }
 
   @UseGuards(JwtAuthGuard)

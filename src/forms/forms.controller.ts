@@ -39,9 +39,9 @@ export class FormsController {
     return await this.formsService.listMine(user.userId, filter);
   }
 
-  @Get(':id/public')
-  async getPublic(@Param('id') id: string) {
-    return await this.formsService.getPublic(Number(id));
+  @Get(':shareToken/public')
+  async getPublic(@Param('shareToken') shareToken: string) {
+    return await this.formsService.getPublic(shareToken);
   }
 
   @UseGuards(JwtAuthGuard)

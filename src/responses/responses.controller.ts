@@ -17,9 +17,9 @@ import type { CurrentUser as CurrentUserType } from '../common/decorators/curren
 export class ResponsesController {
   constructor(private readonly responsesService: ResponsesService) { }
 
-  @Post(':formId')
+  @Post(':shareToken')
   async submit(
-    @Param('formId') formId: string,
+    @Param('shareToken') shareToken: string,
     @Body()
     body: {
       respondentEmail?: string;
@@ -27,7 +27,7 @@ export class ResponsesController {
       formData?: Record<string, { label: string; value: any }>;
     },
   ) {
-    return await this.responsesService.submit(Number(formId), body);
+    return await this.responsesService.submit(shareToken, body);
   }
 
   @UseGuards(JwtAuthGuard)
