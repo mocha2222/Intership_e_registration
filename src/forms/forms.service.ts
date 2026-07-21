@@ -188,7 +188,7 @@ export class FormsService {
       if (form.logoUrl && dto.logoUrl !== form.logoUrl) {
         await this.deleteOldImage(form.logoUrl);
       }
-      form.logoUrl = dto.logoUrl ? await this.processBase64Image(dto.logoUrl, form.id) : null;
+      form.logoUrl = dto.logoUrl || null;
     }
 
     if (dto.design !== undefined) {
