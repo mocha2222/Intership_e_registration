@@ -163,7 +163,6 @@ export class ResponsesService {
     return await this.responses.find({
       where: { formId },
       order: { createdAt: 'DESC' },
-      take: 50,
     });
   }
 
