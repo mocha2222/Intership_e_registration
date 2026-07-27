@@ -24,14 +24,17 @@ export class ResponsesService {
   ) { }
 
   async submit(
-    shareToken: string,
+    identifier: string,
     dto: {
       respondentEmail?: string;
       answers: Record<string, any>;
       formData?: Record<string, { label: string; value: any }>;
     },
   ) {
-    const form = await this.forms.findOne({ where: { shareToken } });
+    const form = /^\d+$/.test(identifier)
+      ? null
+      : await this.forms.findOne({ where: { shareToken: identifier } });
+
     if (!form || !form.isPublished)
       throw new NotFoundException('Form not found');
 

@@ -93,21 +93,30 @@ export class FormsService {
     return form;
   }
 
-  async getPublic(shareToken: string) {
-    const form = await this.forms.findOne({ where: { shareToken } });
+  async getPublic(identifier: string) {
+    const form = await this.findPublishedFormByPublicIdentifier(identifier);
     if (!form) throw new NotFoundException('Form not found');
-    if (!form.isPublished) throw new NotFoundException('Form not found');
 
     // Get current response count
     const submissionCount = await this.forms.manager
       .createQueryBuilder('form_responses', 'r')
-      .where('r.formId = :id', { id })
+      .where('r.formId = :id', { id: form.id })
       .getCount();
 
     return {
       ...form,
       submissionCount
     };
+  }
+
+  private async findPublishedFormByPublicIdentifier(
+    identifier: string,
+  ): Promise<FormEntity | null> {
+    if (/^\d+$/.test(identifier)) return null;
+
+    const form = await this.forms.findOne({ where: { shareToken: identifier } });
+    if (!form || !form.isPublished) return null;
+    return form;
   }
 
   async processBase64Image(base64Str: string, formId: number): Promise<string> {
@@ -135,6 +144,40 @@ export class FormsService {
     } catch (e) {
       // Ignore if file doesn't exist
     }
+  }
+
+  private parseLogoUrls(value: string | null | undefined): string[] {
+    if (!value || value === 'null') return [];
+    const trimmed = value.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((url): url is string => typeof url === 'string' && !!url);
+        }
+      } catch {
+        // Fall through to legacy single-logo handling.
+      }
+    }
+    return [value];
+  }
+
+  private serializeLogoUrls(urls: string[]): string | null {
+    if (urls.length === 0) return null;
+    if (urls.length === 1) return urls[0];
+    return JSON.stringify(urls);
+  }
+
+  private async processLogoUrl(
+    value: string | null | undefined,
+    formId: number,
+  ): Promise<string | null> {
+    const urls = this.parseLogoUrls(value);
+    const processed = await Promise.all(
+      urls.map((url) => this.processBase64Image(url, formId)),
+    );
+    return this.serializeLogoUrls(processed);
   }
 
   async updateMine(ownerId: number, id: number, dto: UpdateFormDto) {
@@ -190,10 +233,17 @@ export class FormsService {
     if (dto.nextElementId !== undefined) form.nextElementId = dto.nextElementId;
 
     if (dto.logoUrl !== undefined) {
-      if (form.logoUrl && dto.logoUrl !== form.logoUrl) {
-        await this.deleteOldImage(form.logoUrl);
+      const oldLogoUrls = this.parseLogoUrls(form.logoUrl);
+      const nextLogoUrl = await this.processLogoUrl(dto.logoUrl, form.id);
+      const nextLogoUrls = new Set(this.parseLogoUrls(nextLogoUrl));
+
+      for (const oldUrl of oldLogoUrls) {
+        if (!nextLogoUrls.has(oldUrl)) {
+          await this.deleteOldImage(oldUrl);
+        }
       }
-      form.logoUrl = dto.logoUrl ? await this.processBase64Image(dto.logoUrl, form.id) : null;
+
+      form.logoUrl = nextLogoUrl;
     }
 
     if (dto.design !== undefined) {
