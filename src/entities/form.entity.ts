@@ -17,6 +17,10 @@ export class FormEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
+  @Index({ unique: true })
+  @Column({ type: 'varchar', length: 64 })
+  shareToken!: string;
+
   @Index()
   @Column()
   ownerId!: number;

@@ -46,6 +46,15 @@ export class MaterialsService {
     return form;
   }
 
+  private async getPublicFormByIdentifier(identifier: string): Promise<FormEntity> {
+    const form = /^\d+$/.test(identifier)
+      ? null
+      : await this.forms.findOne({ where: { shareToken: identifier } });
+
+    if (!form || !form.isPublished) throw new NotFoundException('Form not found');
+    return form;
+  }
+
   async upload(
     ownerId: number,
     formId: number,
@@ -102,9 +111,10 @@ export class MaterialsService {
     return results;
   }
 
-  async listByForm(formId: number): Promise<FormMaterialEntity[]> {
+  async listByForm(identifier: string): Promise<FormMaterialEntity[]> {
+    const form = await this.getPublicFormByIdentifier(identifier);
     return await this.materials.find({
-      where: { formId },
+      where: { formId: form.id },
       order: { createdAt: 'ASC' },
     });
   }

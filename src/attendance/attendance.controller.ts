@@ -7,6 +7,7 @@ import {
   Post,
   Req,
   UseGuards,
+  BadRequestException,
   ForbiddenException,
   NotFoundException,
   HttpCode,
@@ -15,7 +16,7 @@ import { AttendanceService } from './attendance.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { CurrentUser as CurrentUserType } from '../common/decorators/current-user.decorator';
-import { CheckinDto } from './dto/attendance.dto';
+import { CheckinDto, ManualPhoneCheckinDto } from './dto/attendance.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FormResponseEntity } from '../entities/form-response.entity';
@@ -71,31 +72,63 @@ export class AttendanceController {
       deviceInfo,
     );
 
-    const respondent = this.extractRespondentInfo(response);
+    return this.formatCheckinResult(response, result);
+  }
 
-    const formDataDisplay: Record<string, any> = {};
-    if (response.formData && typeof response.formData === 'object') {
-      for (const [key, entry] of Object.entries(response.formData)) {
-        const e = entry as any;
-        if (e?.label && e?.value != null) {
-          formDataDisplay[e.label] = e.value;
-        }
-      }
+  @UseGuards(JwtAuthGuard)
+  @Post('manual-phone')
+  @HttpCode(200)
+  async manualPhoneScan(
+    @CurrentUser() user: CurrentUserType,
+    @Body() dto: ManualPhoneCheckinDto,
+    @Req() req: Request,
+  ) {
+    const phoneDigits = this.normalizePhone(dto.phoneNumber);
+    if (phoneDigits.length < 7) {
+      throw new BadRequestException('Please enter at least 7 phone digits');
     }
 
-    return {
-      success: ['present', 'late'].includes(result.status),
-      status: result.status,
-      message: result.message,
-      isDuplicate: !result.updated,
-      checkInTime: result.scanLog.timestamp,
-      respondent,
-      formData: formDataDisplay,
-      scanLog: {
-        timestamp: result.scanLog.timestamp,
-        result: result.scanLog.result,
-      },
+    const responses = await this.responsesRepository
+      .createQueryBuilder('response')
+      .innerJoinAndSelect('response.form', 'form')
+      .where('form.ownerId = :ownerId', { ownerId: user.userId })
+      .andWhere('form.attendanceEnabled = :attendanceEnabled', {
+        attendanceEnabled: true,
+      })
+      .andWhere('form.isPublished = :isPublished', { isPublished: true })
+      .orderBy('response.submittedAt', 'DESC')
+      .getMany();
+
+    const matches = responses.filter((response) =>
+      this.responseHasPhoneNumber(response, phoneDigits),
+    );
+
+    if (matches.length === 0) {
+      throw new NotFoundException('No attendance response found for this phone number');
+    }
+
+    if (matches.length > 1) {
+      throw new BadRequestException(
+        'Multiple responses match this phone number. Please use the QR code instead.',
+      );
+    }
+
+    const response = matches[0];
+    const form = response.form;
+
+    const deviceInfo = {
+      userAgent: req.get?.('user-agent'),
+      ipAddress: req.ip || req.socket?.remoteAddress,
     };
+
+    const result = await this.attendanceService.processCheckIn(
+      response,
+      form,
+      new Date(),
+      deviceInfo,
+    );
+
+    return this.formatCheckinResult(response, result);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -182,6 +215,74 @@ export class AttendanceController {
   }
 
   // ── Helpers ─────────────────────────────────────────────────────
+
+  private normalizePhone(value: unknown): string {
+    return String(value ?? '').replace(/\D/g, '');
+  }
+
+  private phoneMatches(candidate: string, target: string): boolean {
+    if (candidate === target) return true;
+    if (candidate.length < 7 || target.length < 7) return false;
+    return candidate.endsWith(target) || target.endsWith(candidate);
+  }
+
+  private isPhoneLikeField(label: string, key: string): boolean {
+    const text = `${label} ${key}`.toLowerCase();
+    return (
+      text.includes('phone') ||
+      text.includes('mobile') ||
+      text.includes('tel') ||
+      text.includes('contact')
+    );
+  }
+
+  private responseHasPhoneNumber(
+    response: FormResponseEntity,
+    phoneDigits: string,
+  ): boolean {
+    if (!response.formData || typeof response.formData !== 'object') return false;
+
+    for (const [key, entry] of Object.entries(response.formData)) {
+      const e = entry as any;
+      if (!this.isPhoneLikeField(String(e?.label || ''), key)) continue;
+
+      const valueDigits = this.normalizePhone(e?.value);
+      if (this.phoneMatches(valueDigits, phoneDigits)) return true;
+    }
+
+    return false;
+  }
+
+  private formatCheckinResult(
+    response: FormResponseEntity,
+    result: Awaited<ReturnType<AttendanceService['processCheckIn']>>,
+  ) {
+    const respondent = this.extractRespondentInfo(response);
+
+    const formDataDisplay: Record<string, any> = {};
+    if (response.formData && typeof response.formData === 'object') {
+      for (const [key, entry] of Object.entries(response.formData)) {
+        const e = entry as any;
+        if (e?.label && e?.value != null) {
+          formDataDisplay[e.label] = e.value;
+        }
+      }
+    }
+
+    return {
+      success: ['present', 'late'].includes(result.status),
+      status: result.status,
+      message: result.message,
+      isDuplicate: !result.updated,
+      checkInTime: result.scanLog.timestamp,
+      respondent,
+      formData: formDataDisplay,
+      scanLog: {
+        timestamp: result.scanLog.timestamp,
+        result: result.scanLog.result,
+      },
+    };
+  }
 
   private extractRespondentInfo(response: FormResponseEntity): {
     name?: string;

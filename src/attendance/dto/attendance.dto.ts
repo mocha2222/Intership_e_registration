@@ -15,3 +15,9 @@ export class CheckinDto {
   @IsString()
   token!: string;
 }
+
+export class ManualPhoneCheckinDto {
+  @IsNotEmpty()
+  @IsString()
+  phoneNumber!: string;
+}

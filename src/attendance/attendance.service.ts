@@ -71,7 +71,7 @@ export class AttendanceService {
         errorCorrectionLevel: 'H',
         type: 'image/png',
         width: 300,
-        margin: 1,
+        margin: 4,
         color: { dark: '#000000', light: '#FFFFFF' },
       });
       return qrDataUrl;
