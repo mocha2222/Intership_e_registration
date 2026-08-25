@@ -30,7 +30,6 @@ async function seedAdmin() {
       email,
       name,
       passwordHash,
-      language: 'en',
     });
 
     const saved = await users.save(user);

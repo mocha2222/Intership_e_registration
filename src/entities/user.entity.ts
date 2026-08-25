@@ -18,8 +18,8 @@ export class UserEntity {
   @Column({ type: 'varchar', length: 255 })
   email!: string;
 
-  @Column({ type: 'varchar', length: 120, nullable: true })
-  passwordHash!: string | null;
+  @Column({ type: 'varchar', length: 120, nullable: false })
+  passwordHash!: string;
 
   @Column({ type: 'varchar', length: 120 })
   name!: string;
@@ -35,13 +35,6 @@ export class UserEntity {
 
   @Column({ type: 'varchar', length: 200, nullable: true })
   organizationName!: string | null;
-
-  @Index({ unique: true })
-  @Column({ type: 'varchar', length: 64, nullable: true })
-  googleId!: string | null;
-
-  @Column({ type: 'varchar', length: 2, default: 'en' })
-  language!: 'en' | 'km';
 
   @OneToMany(() => FormEntity, (form) => form.owner)
   forms!: FormEntity[];

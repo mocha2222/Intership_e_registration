@@ -8,7 +8,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
 import { FormEntity } from './form.entity';
 
 export type AttendanceStatus = 'pending' | 'present' | 'late' | 'rejected' | 'absent';
@@ -36,16 +35,8 @@ export class FormResponseEntity {
   form!: FormEntity;
 
   @Index()
-  @Column({ nullable: true })
-  userId!: number | null;
-
-  @ManyToOne(() => UserEntity, { nullable: true, onDelete: 'SET NULL' })
-  user!: UserEntity | null;
-
-
-  @Column({ type: 'text' })
+  @Column({ type: 'varchar', length: 255 })
   qrToken!: string;
-
 
   @Column({ type: 'json', nullable: true })
   formData!: Record<
@@ -75,9 +66,6 @@ export class FormResponseEntity {
     nullable: true,
   })
   scanLogs!: ScanLog[];
-
-  @Column({ type: 'json', nullable: true })
-  metadata!: Record<string, any> | null;
 
   @CreateDateColumn()
   createdAt!: Date;

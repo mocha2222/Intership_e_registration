@@ -51,7 +51,7 @@ export class MaterialsService {
       ? null
       : await this.forms.findOne({ where: { shareToken: identifier } });
 
-    if (!form || !form.isPublished) throw new NotFoundException('Form not found');
+    if (!form) throw new NotFoundException('Form not found');
     return form;
   }
 

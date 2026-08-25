@@ -25,10 +25,6 @@ export class UpdateFormDto {
   schema?: Record<string, any>;
 
   @IsOptional()
-  @IsBoolean()
-  isPublished?: boolean;
-
-  @IsOptional()
   @IsString()
   @IsIn([
     'enabled',
@@ -45,14 +41,8 @@ export class UpdateFormDto {
   layoutType?: string;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  folderKey?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  label?: string;
+  @IsInt()
+  folderId?: number;
 
   @IsOptional()
   @IsArray()
@@ -78,11 +68,6 @@ export class UpdateFormDto {
   @IsOptional()
   @IsBoolean()
   isArchived?: boolean;
-
-  @IsOptional()
-  @IsString()
-  @IsIn(['public', 'private', 'company'])
-  accessMode?: string;
 
   @IsOptional()
   @IsString()
@@ -128,11 +113,7 @@ export class UpdateFormDto {
 
   @IsOptional()
   @IsString()
-  expirationDate?: string | null;
-
-  @IsOptional()
-  @IsString()
-  expirationTime?: string | null;
+  expirationAt?: string | null;
 
   @IsOptional()
   @IsInt()

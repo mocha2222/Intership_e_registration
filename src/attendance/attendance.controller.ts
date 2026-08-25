@@ -95,7 +95,6 @@ export class AttendanceController {
       .andWhere('form.attendanceEnabled = :attendanceEnabled', {
         attendanceEnabled: true,
       })
-      .andWhere('form.isPublished = :isPublished', { isPublished: true })
       .orderBy('response.submittedAt', 'DESC')
       .getMany();
 

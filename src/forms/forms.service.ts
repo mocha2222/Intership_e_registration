@@ -31,11 +31,9 @@ export class FormsService {
       title: dto.title,
       description: dto.description ?? null,
       schema: dto.schema ?? null,
-      isPublished: dto.isPublished ?? false,
       status: dto.status ?? 'enabled',
       layoutType: dto.layoutType ?? 'classic',
-      folderKey: dto.folderKey ?? 'all',
-      label: dto.label ?? null,
+      folderId: dto.folderId ?? null,
       pages: dto.pages ?? [{ elements: [] }],
       nextElementId: dto.nextElementId ?? 1,
       logoUrl: dto.logoUrl ?? null,
@@ -47,8 +45,8 @@ export class FormsService {
         pageBgImage: '',
         formBgImage: '',
       },
-      accessMode: dto.accessMode ?? 'public',
       permissionMode: dto.permissionMode ?? 'submit_and_view',
+      expirationAt: dto.expirationAt ? new Date(dto.expirationAt) : null,
     });
     return await this.forms.save(entity);
   }
@@ -97,7 +95,6 @@ export class FormsService {
     const form = await this.findPublishedFormByPublicIdentifier(identifier);
     if (!form) throw new NotFoundException('Form not found');
 
-    // Get current response count
     const submissionCount = await this.forms.manager
       .createQueryBuilder('form_responses', 'r')
       .where('r.formId = :id', { id: form.id })
@@ -115,7 +112,7 @@ export class FormsService {
     if (/^\d+$/.test(identifier)) return null;
 
     const form = await this.forms.findOne({ where: { shareToken: identifier } });
-    if (!form || !form.isPublished) return null;
+    if (!form) return null;
     return form;
   }
 
@@ -187,11 +184,9 @@ export class FormsService {
     if (dto.description !== undefined)
       form.description = dto.description as any;
     if (dto.schema !== undefined) form.schema = dto.schema;
-    if (dto.isPublished !== undefined) form.isPublished = dto.isPublished;
     if (dto.status !== undefined) form.status = dto.status;
     if (dto.layoutType !== undefined) form.layoutType = dto.layoutType;
-    if (dto.folderKey !== undefined) form.folderKey = dto.folderKey;
-    if (dto.label !== undefined) form.label = dto.label ?? null;
+    if (dto.folderId !== undefined) form.folderId = dto.folderId || null;
 
     if (dto.pages !== undefined) {
       const oldImageUrls = new Set<string>();
@@ -269,7 +264,6 @@ export class FormsService {
     }
     if (dto.isFavorite !== undefined) form.isFavorite = dto.isFavorite;
     if (dto.isArchived !== undefined) form.isArchived = dto.isArchived;
-    if (dto.accessMode !== undefined) form.accessMode = dto.accessMode;
     if (dto.permissionMode !== undefined)
       form.permissionMode = dto.permissionMode;
 
@@ -334,8 +328,9 @@ export class FormsService {
       form.materialUploadEnabled = dto.materialUploadEnabled;
 
     // ── Status Expiration & Limits ──
-    if (dto.expirationDate !== undefined) form.expirationDate = dto.expirationDate;
-    if (dto.expirationTime !== undefined) form.expirationTime = dto.expirationTime;
+    if (dto.expirationAt !== undefined) {
+      form.expirationAt = dto.expirationAt ? new Date(dto.expirationAt) : null;
+    }
     if (dto.submissionLimit !== undefined) form.submissionLimit = dto.submissionLimit;
 
     return await this.forms.save(form);

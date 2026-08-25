@@ -35,7 +35,7 @@ export class ResponsesService {
       ? null
       : await this.forms.findOne({ where: { shareToken: identifier } });
 
-    if (!form || !form.isPublished)
+    if (!form)
       throw new NotFoundException('Form not found');
 
     const formId = form.id;
@@ -47,17 +47,8 @@ export class ResponsesService {
 
     // ── Check Expiration Date/Time ──
     if (form.status === 'disable_date' || form.status === 'disable_both') {
-      if (form.expirationDate) {
-        let expStr = form.expirationDate;
-        if (form.expirationTime) {
-          // Convert "12:15 PM" to 24h format for parsing
-          const [time, modifier] = form.expirationTime.split(' ');
-          let [hours, minutes] = time.split(':');
-          if (hours === '12') hours = '00';
-          if (modifier === 'PM') hours = (parseInt(hours, 10) + 12).toString();
-          expStr += `T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`;
-        }
-        const expDate = new Date(expStr);
+      if (form.expirationAt) {
+        const expDate = new Date(form.expirationAt);
         if (now > expDate) {
           throw new BadRequestException('Form has reached its expiration date');
         }

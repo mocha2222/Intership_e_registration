@@ -22,7 +22,6 @@ export class UsersController {
       avatarUrl: entity.avatarUrl,
       phoneNumber: entity.phoneNumber,
       organizationName: entity.organizationName,
-      language: entity.language,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     };
@@ -43,7 +42,6 @@ export class UsersController {
       avatarUrl: entity.avatarUrl,
       phoneNumber: entity.phoneNumber,
       organizationName: entity.organizationName,
-      language: entity.language,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     };
@@ -60,18 +58,5 @@ export class UsersController {
       dto.oldPassword,
       dto.newPassword,
     );
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Patch('language')
-  async updateLanguage(
-    @CurrentUser() user: CurrentUserType,
-    @Body('language') language: 'en' | 'km',
-  ) {
-    const entity = await this.usersService.updateProfile(user.userId, { language });
-    return {
-      id: entity.id,
-      language: entity.language,
-    };
   }
 }

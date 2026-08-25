@@ -27,7 +27,5 @@ export class UpdateProfileDto {
   @MaxLength(200)
   organizationName?: string;
 
-  @IsOptional()
-  @IsIn(['en', 'km'])
-  language?: 'en' | 'km';
+
 }

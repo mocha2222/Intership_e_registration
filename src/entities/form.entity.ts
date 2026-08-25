@@ -11,6 +11,7 @@ import {
 import { UserEntity } from './user.entity';
 import { FormResponseEntity } from './form-response.entity';
 import { FormMaterialEntity } from './form-material.entity';
+import { FolderEntity } from './folder.entity';
 
 @Entity('forms')
 export class FormEntity {
@@ -43,11 +44,12 @@ export class FormEntity {
   @Column({ type: 'varchar', length: 30, default: 'classic' })
   layoutType!: string;
 
-  @Column({ type: 'varchar', length: 100, default: 'all' })
-  folderKey!: string;
+  @Index()
+  @Column({ type: 'int', nullable: true })
+  folderId!: number | null;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
-  label!: string | null;
+  @ManyToOne(() => FolderEntity, { onDelete: 'SET NULL', nullable: true })
+  folder!: FolderEntity | null;
 
   @Column({ type: 'json', nullable: true })
   pages!: unknown;
@@ -82,10 +84,6 @@ export class FormEntity {
   @Column({ type: 'datetime', nullable: true })
   attendanceCloseTime!: Date | null;
 
-  @Index()
-  @Column({ type: 'boolean', default: false })
-  isPublished!: boolean;
-
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;
 
@@ -95,20 +93,14 @@ export class FormEntity {
   @Column({ type: 'datetime', nullable: true })
   trashedAt!: Date | null;
 
-  @Column({ type: 'varchar', length: 20, default: 'public' })
-  accessMode!: string;
-
   @Column({ type: 'varchar', length: 30, default: 'submit_and_view' })
   permissionMode!: string;
 
   @Column({ type: 'boolean', default: false })
   materialUploadEnabled!: boolean;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  expirationDate!: string | null;
-
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  expirationTime!: string | null;
+  @Column({ type: 'datetime', nullable: true })
+  expirationAt!: Date | null;
 
   @Column({ type: 'int', nullable: true })
   submissionLimit!: number | null;

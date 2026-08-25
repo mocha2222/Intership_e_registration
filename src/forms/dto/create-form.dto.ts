@@ -29,10 +29,6 @@ export class CreateFormDto {
   schema?: Record<string, any>;
 
   @IsOptional()
-  @IsBoolean()
-  isPublished?: boolean;
-
-  @IsOptional()
   @IsString()
   @IsIn([
     'enabled',
@@ -49,14 +45,8 @@ export class CreateFormDto {
   layoutType?: string;
 
   @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  folderKey?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(100)
-  label?: string;
+  @IsInt()
+  folderId?: number;
 
   @IsOptional()
   @IsArray()
@@ -77,11 +67,10 @@ export class CreateFormDto {
 
   @IsOptional()
   @IsString()
-  @IsIn(['public', 'private', 'company'])
-  accessMode?: string;
+  @IsIn(['submit_only', 'submit_and_view'])
+  permissionMode?: string;
 
   @IsOptional()
   @IsString()
-  @IsIn(['submit_only', 'submit_and_view'])
-  permissionMode?: string;
+  expirationAt?: string;
 }

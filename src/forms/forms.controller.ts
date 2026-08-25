@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -18,7 +19,7 @@ import { FormsService } from './forms.service';
 
 @Controller('forms')
 export class FormsController {
-  constructor(private readonly formsService: FormsService) {}
+  constructor(private readonly formsService: FormsService) { }
 
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -47,7 +48,9 @@ export class FormsController {
   @UseGuards(JwtAuthGuard)
   @Get(':id')
   async getMine(@CurrentUser() user: CurrentUserType, @Param('id') id: string) {
-    return await this.formsService.getMine(user.userId, Number(id));
+    const numId = Number(id);
+    if (isNaN(numId)) throw new NotFoundException('Form not found');
+    return await this.formsService.getMine(user.userId, numId);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -57,7 +60,9 @@ export class FormsController {
     @Param('id') id: string,
     @Body() dto: UpdateFormDto,
   ) {
-    return await this.formsService.updateMine(user.userId, Number(id), dto);
+    const numId = Number(id);
+    if (isNaN(numId)) throw new NotFoundException('Form not found');
+    return await this.formsService.updateMine(user.userId, numId, dto);
   }
 
   @UseGuards(JwtAuthGuard)

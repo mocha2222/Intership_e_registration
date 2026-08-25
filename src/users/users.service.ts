@@ -14,7 +14,7 @@ export class UsersService {
     private readonly users: Repository<UserEntity>,
     @InjectRepository(FormEntity)
     private readonly forms: Repository<FormEntity>,
-  ) {}
+  ) { }
 
   async findAll() {
     return await this.users.find({
@@ -33,25 +33,17 @@ export class UsersService {
     return await this.users.findOne({ where: { email } });
   }
 
-  async findByGoogleId(googleId: string) {
-    return await this.users.findOne({ where: { googleId } });
-  }
-
   async create(data: {
     email: string;
     name: string;
-    passwordHash?: string | null;
-    googleId?: string | null;
+    passwordHash: string;
     avatarUrl?: string | null;
-    language?: 'en' | 'km';
   }) {
     const entity = this.users.create({
       email: data.email,
       name: data.name,
-      passwordHash: data.passwordHash ?? null,
-      googleId: data.googleId ?? null,
+      passwordHash: data.passwordHash,
       avatarUrl: data.avatarUrl ?? null,
-      language: data.language ?? 'en',
     });
     return await this.users.save(entity);
   }
@@ -67,18 +59,16 @@ export class UsersService {
     const formIds = ownedForms.map((f) => f.id);
 
     await this.users.manager.transaction(async (manager) => {
-      // Safety fallback: remove user-owned forms directly even if DB FK cascade is missing.
       await manager.getRepository(FormEntity).delete({ ownerId: id });
       await manager.getRepository(UserEntity).delete(id);
     });
 
-    // Database cascade does not delete files on disk; clean per-form upload folders explicitly.
     for (const formId of formIds) {
       const uploadDir = path.join(process.cwd(), 'uploads', String(formId));
       try {
         await fs.rm(uploadDir, { recursive: true, force: true });
       } catch (e) {
-        // Ignore filesystem cleanup failures to keep user deletion successful.
+
       }
     }
   }
@@ -91,7 +81,6 @@ export class UsersService {
       avatarUrl?: string | null;
       phoneNumber?: string | null;
       organizationName?: string | null;
-      language?: 'en' | 'km';
     },
   ) {
     const user = await this.findById(userId);
@@ -101,7 +90,6 @@ export class UsersService {
     if (data.phoneNumber !== undefined) user.phoneNumber = data.phoneNumber;
     if (data.organizationName !== undefined)
       user.organizationName = data.organizationName;
-    if (data.language !== undefined) user.language = data.language;
     return await this.users.save(user);
   }
 
