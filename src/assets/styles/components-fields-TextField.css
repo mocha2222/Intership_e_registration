@@ -1,0 +1,69 @@
+.block-wrapper {
+  position: relative;
+  padding: 20px 60px 20px 24px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  border-bottom: 1px solid #e8e8e8;
+}
+.block-wrapper:hover:not(.edit-mode) {
+  border-color: #a8c8f8;
+  background: rgba(24, 144, 255, 0.05);
+}
+.block-wrapper.edit-mode {
+  border: 2px solid var(--primary-blue);
+  background: rgba(24, 144, 255, 0.1);
+  cursor: default;
+}
+.block-wrapper.public-mode { padding: 0 !important; border: none !important; background: transparent !important; cursor: default !important; border-bottom: none !important; }
+
+.fill-input {
+  width: 100%;
+  border: 1.5px solid #d0d5e0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.15s;
+}
+.fill-input:focus { border-color: var(--primary-blue); }
+.fill-input.input-error { border-color: #f44336; background-color: #fff8f8; }
+
+.text-input {
+  display: block;
+  width: 50%;
+  background: transparent;
+  border: 1px solid #d0d5e0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #1a2547;
+  outline: none;
+  transition: border-color 0.15s;
+  height: 42px;
+}
+.text-input:read-only { background: transparent; cursor: default; }
+.edit-mode .text-input:focus { border-color: var(--primary-blue); }
+
+.block-actions {
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.action-btn {
+  width: 36px; height: 36px;
+  border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 15px; color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  transition: opacity 0.15s;
+}
+.action-btn:hover  { opacity: 0.85; }
+.delete-btn   { background: #e03b3b; }

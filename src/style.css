@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap');
+
+:root {
+  /* Primary Colors */
+  --primary-blue: #2261AF;
+  --primary-dark: #1A4A8F;
+  --primary-light: #2261AF;
+
+  /* Neutral Colors */
+  --white: #FFFFFF;
+  --light-gray: #F5F5F5;
+  --medium-gray: #E8E8E8;
+  --dark-gray: #8A93B8;
+  --text-dark: #2C3345;
+  --text-muted: #B0B8CC;
+
+  /* Header & Navigation */
+  --header-bg: #2261AF;
+  --header-text: #FFFFFF;
+  --header-hover: #1A4A8F;
+
+  /* Form Elements */
+  --input-bg: #FFFFFF;
+  --input-border: #D0D5E0;
+  --input-border-focus: #2261AF;
+  --input-text: #2C3345;
+  --input-placeholder: #8A93B8;
+
+  /* Labels & Text */
+  --label-text: #1A2547;
+  --label-size: 14px;
+  --label-weight: 600;
+
+  /* Backgrounds */
+  --page-bg: #DEE7F3;
+  --form-bg: #FFFFFF;
+  --section-bg: #DEE7F3;
+
+  /* Borders */
+  --border-light: #E8E8E8;
+  --border-medium: #D0D5E0;
+
+  /* Status & Alerts */
+  --success-color: #4CAF50;
+  --error-color: #E03B3B;
+  --error-light: #FFF8F8;
+  --warning-color: #FF9800;
+  --info-color: #2196F3;
+
+  /* Tags & Badges */
+  --badge-bg: #DEE7F3;
+  --badge-text: #2261AF;
+
+  /* Hover & Active States */
+  --hover-bg: rgba(34, 97, 175, 0.05);
+  --hover-border: #A8C8F8;
+  --active-bg: rgba(34, 97, 175, 0.1);
+  --active-border: #2261AF;
+
+  /* Editor/Builder */
+  --editor-bg: #1A2547;
+  --editor-toolbar-bg: #1A2547;
+  --editor-text: #FFFFFF;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.18);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark Mode Support (optional) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --header-bg: #154280;
+    --page-bg: #1A1F2E;
+    --form-bg: #252C3D;
+    --section-bg: #2A3142;
+    --input-bg: #3A4258;
+    --text-dark: #E0E0E0;
+    --text-muted: #9CA3AF;
+  }
+}
+
+/* Global Responsive Baseline */
+html {
+  /* Set root font size to scale fluidly between 14px on small screens and 16px on large screens */
+  /* This means any element using 'rem' throughout the entire website will automatically scale! */
+  font-size: clamp(14px, 1vw + 10px, 16px);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Open Sans', sans-serif, Arial, Helvetica;
+  color: var(--text-dark, #2C3345);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Global Responsive Images & Media */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Universal box-sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Base Form Resets for fluidity */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Utility constraints to prevent overflow anywhere on the site */
+.container,
+.container-fluid {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Typography scaling for all headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+  line-height: 1.2;
+}
+
+/* Responsive spacer for pages with Header and Subheader */
+.sub-header-spacer {
+  height: 139px;
+}
+
+@media (max-width: 991.98px) {
+  .sub-header-spacer {
+    height: 136px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sub-header-spacer {
+    height: 116px;
+  }
+}
+/* Shared optional dialogs; existing page styles remain scoped. */
+.manual-modal { border: 0; border-radius: 12px; padding: 24px; width: min(520px, calc(100vw - 32px)); color: var(--text-dark); background: var(--white); }
+.manual-modal::backdrop { background: rgba(0, 0, 0, .45); }

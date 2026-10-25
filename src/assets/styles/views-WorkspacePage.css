@@ -1,0 +1,42 @@
+.workspace-page { height: calc(100vh - 4.6875rem); width: 100%; background: #fff; }
+.workspace-body { position: relative; min-height: 0; }
+.workspace-backdrop { position: fixed; inset: 0; background: rgba(18, 31, 72, 0.35); z-index: 1090; }
+.form-list { flex: 1; background: #F8F7FA; }
+
+.jf-empty-state { background: #fafbfe; padding: clamp(1rem, 5vw, 2rem); }
+.jf-empty-icon { font-size: clamp(3.5rem, 8vw, 4rem); color: #c8d2ea; }
+.jf-empty-img { width: clamp(160px, 25vw, 240px); height: auto; object-fit: contain; }
+.jf-empty-title { font-size: clamp(1rem, 3vw, 1.25rem); font-weight: 700; color: #1c2a5a; text-align: center; }
+.jf-empty-sub { font-size: clamp(0.8125rem, 2vw, 0.875rem); color: #8993a4; max-width: 25rem; text-align: center; font-weight: 400; }
+.jf-empty-btn {
+  width: 100%; max-width: 400px; height: 44px; background: var(--header-bg); color: #fff;
+  font-weight: 700; font-size: 0.9375rem; border: none; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.jf-empty-btn:hover { background: var(--header-hover); color: #fff; }
+.jf-trash-note { font-size: 0.85rem; color: #E03B3B; text-align: center; margin-top: 1rem; }
+
+/* Bulk actions */
+.bulk-action-bar {
+  height: clamp(3rem, 6vw, 3.375rem); background: #2e4184; color: #fff; z-index: 100;
+  box-shadow: 0 0.25rem 0.625rem rgba(0,0,0,0.1); flex-shrink: 0; padding: 0 clamp(0.5rem, 2vw, 1rem);
+}
+.bulk-count {
+  width: 1.5rem; height: 1.5rem; background: #fff; color: #2e4184;
+  border-radius: 50%; font-size: 0.8125rem; font-weight: 800;
+}
+.bulk-text { font-size: 0.875rem; font-weight: 400; }
+.bulk-btn {
+  height: 2rem; font-size: 0.75rem; font-weight: 700; color: #fff;
+  border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1);
+  display: flex; align-items: center; border-radius: 0.375rem; padding: 0 1rem;
+}
+.bulk-btn:hover { background: rgba(255,255,255,0.2); color: #fff; }
+.bulk-btn-danger:hover { background: #fee2e2; color: #dc2626; border-color: #fee2e2; }
+.bulk-btn-success:hover { background: #f0fdf4; color: #16a34a; border-color: #f0fdf4; }
+
+@media (max-width: 991.98px) {
+  .workspace-page { height: auto; min-height: calc(100vh - 4.5rem); }
+  .workspace-body { overflow: auto; }
+  .jf-empty-btn { max-width: 20rem; }
+}

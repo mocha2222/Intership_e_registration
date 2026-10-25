@@ -1,0 +1,156 @@
+.block-wrapper {
+  position: relative;
+  padding: 20px 60px 20px 24px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  border-bottom: 1px solid #e8e8e8;
+}
+.block-wrapper.public-mode { padding: 0 !important; border: none !important; background: transparent !important; cursor: default !important; border-bottom: none !important; }
+.block-wrapper.edit-mode { border: 2px solid var(--primary-blue); background: var(--active-bg); cursor: default; }
+.block-wrapper:hover:not(.public-mode) { border-color: #a8c8f8; background: rgba(24, 144, 255, 0.05); }
+
+.label-edit-input {
+  display: block;
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid var(--primary-blue);
+  background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a2547;
+  outline: none;
+  box-shadow: none;
+  appearance: none;
+  padding: 2px 0 4px;
+  margin-bottom: 12px;
+}
+
+/* Label — always its own full-width line above inputs */
+.field-label {
+  display: block;
+  width: 100%;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a2547;
+  margin: 0 0 12px;
+  line-height: 1.4;
+}
+
+/* Public Mode Styles */
+.fill-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3345;
+  margin-bottom: 6px;
+}
+.required-asterisk { color: #f44336; margin-left: 2px; }
+
+.fill-input {
+  width: 100%;
+  border: 1.5px solid #d0d5e0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  background: transparent;
+  transition: border-color 0.15s;
+}
+.fill-input:focus { border-color: var(--primary-blue); }
+.fill-input.input-error { border-color: #f44336; background-color: #fff8f8; }
+
+/* Two-column input row */
+.name-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+.public-name-row .name-col {
+  display: flex;
+  flex-direction: column;
+}
+.name-col {
+  flex: 1;
+  position: relative;
+}
+
+.sub-label-input {
+  width: 100%;
+  margin-top: 4px;
+  border: none;
+  border-bottom: 1px solid #d0d5e0;
+  background: transparent;
+  font-size: 12px;
+  color: #1a2547;
+  outline: none;
+  box-shadow: none;
+  appearance: none;
+  box-shadow: none;
+  appearance: none;
+  padding: 2px 0 3px;
+}
+
+.sub-label-input:focus { border-bottom-color: var(--primary-blue); }
+
+.public-name-row .sub-label {
+  margin-top: 6px;
+}
+
+/* Inputs */
+.name-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #d0d5e0;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: #1a2547;
+  outline: none;
+  transition: border-color 0.15s;
+  display: block;
+}
+.name-input:read-only { background: transparent; cursor: default; }
+.edit-mode .name-input:focus { border-color: var(--primary-blue); }
+
+/* Sub-labels under each input */
+.sub-label {
+  display: block;
+  font-size: 12px;
+  color: #8a93b8;
+  margin-top: 4px;
+}
+
+/* Drag handle */
+.drag-handle {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: #b0b8cc;
+  font-size: 16px;
+  cursor: grab;
+  user-select: none;
+}
+
+/* Action icons */
+.block-actions {
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.action-btn {
+  width: 36px; height: 36px;
+  border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 15px; color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  transition: opacity 0.15s;
+}
+.action-btn:hover  { opacity: 0.85; }
+.delete-btn   { background: #e03b3b; }

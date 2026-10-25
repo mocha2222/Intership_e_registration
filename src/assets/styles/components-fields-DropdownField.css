@@ -1,0 +1,177 @@
+.block-wrapper {
+  position: relative;
+  padding: 20px 60px 20px 24px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  border-bottom: 1px solid #e8e8e8;
+}
+.block-wrapper.public-mode { padding: 0 !important; border: none !important; background: transparent !important; cursor: default !important; border-bottom: none !important; }
+.block-wrapper.edit-mode { border: 2px solid var(--primary-blue); background: var(--active-bg); cursor: default; }
+.block-wrapper:hover:not(.public-mode) { border-color: #a8c8f8; background: rgba(24, 144, 255, 0.05); }
+
+
+
+.fill-input {
+  width: 100%; border: 1.5px solid #d0d5e0; border-radius: 6px;
+  padding: 10px 12px; font-size: 14px; outline: none; background: #fff;
+  transition: border-color 0.15s; cursor: pointer;
+}
+.fill-input:focus { border-color: var(--primary-blue); }
+.fill-input:disabled { cursor: default; background: #f8f9fb; }
+.fill-input.input-error { border-color: #f44336; background-color: #fff8f8; }
+
+.field-select {
+  width: 100%; max-width: 340px; background: transparent;
+  border: 1px solid #d0d5e0; border-radius: 4px; padding: 8px 10px;
+  font-size: 14px; color: #546e7a; outline: none;
+}
+
+.other-field-wrap {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 340px;
+}
+
+.other-field-label {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a2547;
+  white-space: nowrap;
+}
+
+.other-input,
+.other-fill-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-bottom: 1px solid #d1d5db;
+  border-radius: 0;
+  background: transparent;
+  outline: none;
+  padding: 4px 0 6px;
+  font-size: 14px;
+  color: #1a2547;
+  cursor: text;
+}
+
+.other-input:focus,
+.other-fill-input:focus {
+  border-bottom-color: var(--primary-blue);
+}
+
+.child-dropdowns { max-width: 340px; }
+
+.add-links { display: flex; gap: 16px; }
+.add-link { font-size: 13px; color: var(--primary-blue); cursor: pointer; text-decoration: underline; }
+.add-link:hover { opacity: 0.8; }
+
+.hint-text { font-size: 12px; color: #8a93b8; margin: 0 0 6px; }
+
+.options-textarea {
+  width: 100%; max-width: 340px; border: 1.5px solid var(--primary-blue);
+  border-radius: 4px; padding: 8px 10px; font-size: 13px; color: #37474f;
+  resize: vertical; min-height: 80px; background: #fff; outline: none; display: block;
+}
+
+.secondary-btn {
+  border: 1px solid #b5c8eb; border-radius: 999px; background: #fff;
+  color: #295ea6; font-size: 12px; font-weight: 600; padding: 7px 12px;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.secondary-btn:hover { background: #eef5ff; border-color: #8cb7f5; }
+
+/* ─── Option chips ─── */
+.option-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.option-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #c9daf3;
+  color: #31456a;
+  font-size: 12px;
+  font-weight: 600;
+}
+.option-chip.filltext-chip {
+  background: #f0f7f4;
+  border-color: #a3d9c9;
+  color: #1b6851;
+}
+.chip-type-badge {
+  font-size: 10px;
+  opacity: 0.75;
+  font-weight: normal;
+  padding-left: 2px;
+}
+.chip-remove-btn {
+  border: none;
+  background: transparent;
+  color: #8b96ad;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.chip-remove-btn:hover { color: #e03b3b; }
+
+.mapping-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mapping-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #c8d5eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #37474f;
+  outline: none;
+}
+.mapping-input:focus { border-color: var(--primary-blue); }
+
+.add-btn-dropdown, .add-btn-filltext {
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.add-btn-filltext {
+  background: #f0f7f4;
+  border-color: #a3d9c9;
+  color: #1b6851;
+}
+.add-btn-filltext:hover {
+  background: #e2f2eb;
+}
+
+
+
+.block-actions {
+  position: absolute; right: -18px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.action-btn {
+  width: 36px; height: 36px; border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 15px; color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  transition: opacity 0.15s;
+}
+.action-btn:hover { opacity: 0.85; }
+.delete-btn { background: #e03b3b; }

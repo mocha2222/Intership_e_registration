@@ -1,0 +1,295 @@
+.node-editor {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid #bfd8ff;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.86);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.node-editor.nested {
+  margin-left: 16px;
+  background: #fafdff;
+}
+
+.node-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.node-summary {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #7180a3;
+}
+
+.child-name-row {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.inline-delete-btn,
+.secondary-btn {
+  border: 1px solid #b5c8eb;
+  border-radius: 999px;
+  background: #fff;
+  color: #295ea6;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.inline-delete-btn {
+  color: #c43232;
+  border-color: #efb1b1;
+}
+
+.mapping-grid {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mapping-row {
+  border: 1px solid #d8e6fb;
+  border-radius: 10px;
+  background: #f8fbff;
+  padding: 12px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.mapping-parent {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mapping-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.mapping-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ddeeff;
+  color: #124a8a;
+  font-size: 12px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+
+.mapping-editor {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.option-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.option-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #c9daf3;
+  color: #31456a;
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+
+.option-chip.filltext-chip {
+  background: #f0f7f4;
+  border-color: #a3d9c9;
+  color: #1b6851;
+}
+
+.chip-type-badge {
+  font-size: 10px;
+  opacity: 0.75;
+  font-weight: normal;
+  padding-left: 2px;
+  white-space: nowrap;
+}
+
+.add-btn-dropdown,
+.add-btn-filltext {
+  font-size: 11px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.add-btn-filltext {
+  background: #f0f7f4;
+  border-color: #a3d9c9;
+  color: #1b6851;
+}
+
+.add-btn-filltext:hover {
+  background: #e2f2eb;
+}
+
+.chip-remove-btn {
+  border: none;
+  background: transparent;
+  color: #8b96ad;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.mapping-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.mapping-input-row .mapping-input {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.mapping-input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  border: 1px solid #c8d5eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #37474f;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.empty-mapping {
+  margin: 0;
+  font-size: 12px;
+  color: #8a93b8;
+}
+
+.nested-children {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+  min-width: 0;
+}
+
+.nested-child-wrap {
+  min-width: 0;
+}
+
+/* Tablet */
+@media (max-width: 768px) {
+  .node-editor {
+    padding: 14px;
+  }
+
+  .node-editor.nested {
+    margin-left: 8px;
+  }
+
+  .node-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inline-delete-btn {
+    align-self: flex-start;
+  }
+
+  .mapping-input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mapping-input-row .mapping-input {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .mapping-input-row .secondary-btn {
+    width: 100%;
+  }
+
+  .add-btn-dropdown,
+  .add-btn-filltext {
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .node-editor {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .node-editor.nested {
+    margin-left: 4px;
+  }
+
+  .mapping-row {
+    padding: 10px;
+  }
+
+  .mapping-parent {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mapping-badge {
+    width: 100%;
+    border-radius: 8px;
+  }
+
+  .option-chip-list {
+    gap: 6px;
+  }
+
+  .option-chip {
+    width: 100%;
+    justify-content: space-between;
+    border-radius: 8px;
+  }
+
+  .inline-delete-btn {
+    width: 100%;
+  }
+
+  .secondary-btn {
+    white-space: normal;
+  }
+}

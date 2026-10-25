@@ -1,0 +1,41 @@
+.child-preview-card {
+  border: 1px solid #cfdcf4;
+  border-radius: 10px;
+  background: #f8fbff;
+  padding: 12px;
+}
+
+.child-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.child-preview-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #24345c;
+}
+
+.child-preview-state {
+  font-size: 11px;
+  color: #6f7d9e;
+}
+
+.field-select {
+  width: 100%;
+  max-width: 340px;
+  background: #fff;
+  border: 1px solid #d0d5e0;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: #546e7a;
+  outline: none;
+}
+
+.other-preview-input {
+  margin-top: 8px;
+}

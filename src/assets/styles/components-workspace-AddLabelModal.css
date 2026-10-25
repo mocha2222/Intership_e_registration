@@ -1,0 +1,121 @@
+.jf-modal-wrap {
+  position: fixed;
+  inset: 0;
+  background: rgba(22, 35, 86, 0.55);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.jf-modal-card {
+  width: 100%;
+  max-width: 600px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.jf-modal-head {
+  padding: 18px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.jf-modal-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.jf-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  color: #6b7280;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 1rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.jf-close-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.jf-modal-body {
+  padding: 24px 24px 28px;
+}
+
+.jf-body-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.jf-input {
+  height: 44px;
+  border: 1px solid #93a8d4;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  color: #374151;
+  padding: 0 14px;
+}
+
+.jf-input::placeholder {
+  color: #9ca3af;
+}
+
+.jf-input:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  border-color: #6b8cce;
+  outline: none;
+}
+
+.jf-modal-foot {
+  border-top: 1px solid #e5e7eb;
+  padding: 14px 24px;
+}
+
+.jf-cancel-btn {
+  border: 1px solid #d1d5db;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.875rem;
+  min-width: 90px;
+  height: 38px;
+  border-radius: 12px;
+  background: #fff;
+  transition: background 0.15s;
+}
+
+.jf-cancel-btn:hover {
+  background: #f9fafb;
+}
+
+.jf-save-btn {
+  background: var(--header-bg);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  min-width: 100px;
+  height: 38px;
+  border-radius: 12px;
+  border: none;
+  transition: background 0.15s;
+}
+
+.jf-save-btn:hover {
+  background: var(--header-hover);
+}
+
+.jf-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

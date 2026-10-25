@@ -1,0 +1,262 @@
+/* KEEP YOUR STYLE EXACTLY (unchanged) */
+
+.profile-account { background: #ffffff; }
+
+.profile-account-title {
+  margin: 0;
+  padding: clamp(14px, 3vw, 22px) clamp(14px, 3vw, 24px);
+  font-size: clamp(20px, 5vw, 30px);
+  font-weight: 700;
+  color: #101f5a;
+  border-bottom: 1px solid #e2e7f3;
+}
+
+.profile-account-title span { color: #0f9b45; }
+
+.profile-table { width: 100%; }
+
+.profile-row {
+  min-height: clamp(45px, 8vw, 58px);
+  border-bottom: 1px solid #e4e8f2;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  padding: clamp(8px, 2vw, 12px) 0;
+  gap: clamp(8px, 1.5vw, 12px);
+}
+
+.profile-col-label {
+  width: clamp(100px, 25vw, 215px);
+  padding: 0 clamp(10px, 2vw, 20px);
+  color: #1a275f;
+  font-size: clamp(13px, 2.5vw, 16px);
+  font-weight: 700;
+}
+
+.profile-col-value {
+  flex: 1;
+  color: #1e2d61;
+  font-size: clamp(13px, 2.5vw, 15px);
+  padding: 0 clamp(8px, 2vw, 12px);
+}
+
+.profile-empty { color: #a0a8c0; font-style: italic; }
+
+.profile-password-mask {
+  letter-spacing: 0.12em;
+  color: #6d7695;
+  font-weight: 600;
+}
+
+.profile-avatar-box {
+  width: clamp(32px, 6vw, 38px);
+  height: clamp(32px, 6vw, 38px);
+  border-radius: 7px;
+  background: #5a6cc5;
+  color: #fff;
+  font-size: clamp(16px, 3vw, 20px);
+  font-weight: 700;
+}
+
+.profile-input {
+  height: clamp(32px, 6vw, 36px);
+  border: 1.5px solid #c5cde8;
+  border-radius: 6px;
+  padding: 0 clamp(8px, 2vw, 10px);
+  font-size: clamp(12px, 2vw, 14px);
+  width: 100%;
+  max-width: 340px;
+}
+
+.profile-col-action {
+  width: clamp(80px, 20vw, 120px);
+  text-align: right;
+  padding-right: clamp(10px, 2vw, 18px);
+}
+
+.profile-edit-link {
+  color: #4a587f;
+  text-decoration: none;
+  font-size: clamp(12px, 2vw, 14px);
+  font-weight: 600;
+}
+
+.profile-save-link {
+  color: #0f9b45;
+  font-weight: 700;
+  font-size: clamp(11px, 2vw, 13px);
+}
+
+.profile-cancel-link {
+  color: #9aa3be;
+  font-size: clamp(11px, 2vw, 13px);
+}
+
+.action-btns {
+  display: flex;
+  gap: clamp(8px, 2vw, 12px);
+  justify-content: flex-end;
+}
+
+.password-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(7, 18, 52, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.password-modal-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(9, 16, 39, 0.24);
+}
+
+.password-modal-head {
+  padding: 18px 20px;
+  border-bottom: 1px solid #e2e7f3;
+}
+
+.password-modal-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #101f5a;
+}
+
+.password-modal-subtitle {
+  margin-top: 4px;
+  font-size: 13px;
+  color: #6b7699;
+}
+
+.password-modal-close {
+  border: none;
+  background: #eef2fb;
+  color: #41507f;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.password-modal-body {
+  padding: 18px 20px 20px;
+}
+
+.password-field-label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a275f;
+}
+
+.password-input {
+  width: 100%;
+  height: 40px;
+  border: 1.5px solid #c5cde8;
+  border-radius: 6px;
+  padding: 0 44px 0 12px;
+  font-size: 14px;
+}
+
+.password-input-wrap {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.password-eye-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #5d6b8f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.password-eye-btn:hover {
+  color: #101f5a;
+}
+
+.password-error {
+  margin-bottom: 10px;
+  color: #c0392b;
+  font-size: 13px;
+}
+
+.password-success {
+  margin-bottom: 10px;
+  color: #0f9b45;
+  font-size: 13px;
+}
+
+.password-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.password-cancel-btn,
+.password-save-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.password-cancel-btn {
+  background: #eef2fb;
+  color: #41507f;
+}
+
+.password-save-btn {
+  background: #0f9b45;
+  color: #fff;
+}
+
+.password-save-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.profile-logout-btn {
+  border: none;
+  color: #e74c3c;
+  padding: clamp(6px, 1.5vw, 8px) clamp(16px, 3vw, 22px);
+  background: none;
+  border-radius: 6px;
+  font-size: clamp(13px, 2.5vw, 15px);
+}
+
+@media (max-width: 767.98px) {
+  .profile-col-label {
+    min-width: clamp(60px, 20vw, 100px);
+    padding: 0 clamp(6px, 1vw, 10px);
+  }
+
+  .profile-col-value {
+    flex-shrink: 1;
+  }
+
+  .profile-col-action {
+    width: auto;
+    padding-left: clamp(6px, 1vw, 8px);
+  }
+}

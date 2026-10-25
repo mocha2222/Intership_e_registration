@@ -1,0 +1,159 @@
+/* ─── Wrapper ─── */
+.logo-banner-wrapper {
+  position: relative;
+  border-bottom: 1px solid #e8e8e8;
+}
+.logo-banner-wrapper.public-mode {
+  border: none !important;
+}
+.logo-banner-wrapper.edit-mode {
+  outline: 2px solid var(--primary-blue, #2762af);
+  outline-offset: -2px;
+}
+
+/* ─── Builder frame ─── */
+.banner-frame {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  background: #f0f2f8;
+  min-height: 80px;
+  display: flex;
+  align-items: stretch;
+}
+.banner-frame.active { cursor: crosshair; }
+
+/* ─── Placeholder ─── */
+.banner-placeholder {
+  width: 100%;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  border: 2px dashed #c8d4ea;
+  border-radius: 4px;
+  background: #f7f9fc;
+}
+.banner-placeholder.active { border-color: var(--primary-blue, #2762af); background: #f0f5ff; }
+.banner-placeholder-icon { font-size: 28px; color: #9baec8; }
+.banner-placeholder-text { font-size: 13px; font-weight: 500; color: #5a76a8; }
+.banner-placeholder-text.muted { color: #b0b8c8; }
+
+/* ─── Pannable image container ─── */
+.banner-image-pan-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  margin: 0 auto;
+}
+.banner-image-pan-container:active { cursor: grabbing; }
+.banner-image {
+  display: block;
+  position: relative;
+  pointer-events: none;
+}
+.pan-hint {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+/* ─── Controls ─── */
+.banner-controls {
+  background: #f7f9fc;
+  border-top: 1px solid #e0e8f4;
+  padding: 10px 14px;
+}
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ctrl-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ctrl-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7a90b0;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.ctrl-input {
+  width: 80px;
+  border: 1.5px solid #d0d8ea;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 12px;
+  outline: none;
+  background: #fff;
+  color: #2c3e5a;
+}
+.ctrl-input:focus { border-color: var(--primary-blue, #2762af); }
+.ctrl-remove-btn {
+  margin-left: auto;
+  background: none;
+  border: 1.5px solid #e87a7a;
+  color: #d93030;
+  border-radius: 5px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s;
+}
+.ctrl-remove-btn:hover { background: #fff0f0; }
+
+/* ─── Delete action button ─── */
+.block-actions {
+  position: absolute;
+  right: -18px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.action-btn {
+  width: 36px; height: 36px;
+  border: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 15px; color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  transition: opacity 0.15s;
+}
+.action-btn:hover { opacity: 0.85; }
+.delete-btn { background: #e03b3b; }
+
+/* ─── Public mode ─── */
+.banner-public-frame {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  margin: 0 auto;
+}
+.banner-public-image {
+  display: block;
+  pointer-events: none;
+}
+
+.hidden-input { display: none; }

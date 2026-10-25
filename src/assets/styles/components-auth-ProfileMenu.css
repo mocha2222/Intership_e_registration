@@ -1,0 +1,88 @@
+.profile-dropdown-card {
+	width: 260px;
+	background: #ffffff;
+	border-radius: 12px;
+	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+	border: 1px solid #edf2f7;
+}
+
+.pd-section {
+	padding: 12px 16px;
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.pd-section:last-child {
+	border-bottom: none;
+}
+
+.pd-top {
+	padding: 16px;
+}
+
+.pd-avatar {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	background: #e2e8f0;
+	color: #4a5568;
+	font-size: 20px;
+	font-weight: 700;
+	flex-shrink: 0;
+	border: 1px solid #cbd5e0;
+}
+
+.pd-user-text {
+	margin-left: 12px;
+}
+
+.pd-hello {
+	color: #64748b;
+	font-size: 13px;
+}
+
+.pd-name {
+	color: #2563eb;
+	font-weight: 700;
+}
+
+.pd-email {
+	color: #94a3b8;
+	font-size: 12px;
+	margin-top: 1px;
+}
+
+.pd-item {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 0;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.pd-link:hover .pd-label,
+.pd-usage:hover .pd-label {
+	color: #1e293b;
+}
+
+.pd-icon {
+	width: 18px;
+	font-size: 16px;
+	color: #334155;
+	text-align: center;
+}
+
+.pd-label {
+	font-size: 14px;
+	font-weight: 500;
+	color: #475569;
+}
+
+.pd-logout:hover .pd-label {
+	color: #dc2626;
+}
+
+.pd-footer {
+	background: #fff;
+}

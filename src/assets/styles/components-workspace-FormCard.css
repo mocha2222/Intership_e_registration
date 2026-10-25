@@ -1,0 +1,75 @@
+.jf-form-row { min-height: 66px; background: #fff; border-bottom: 1px solid #e0e6f3; cursor: pointer; transition: background 0.15s; }
+.jf-form-row:hover { background: #f9fbff; }
+.jf-check-input { width: 16px; height: 16px; accent-color: var(--primary-blue); cursor: pointer; }
+.jf-form-icon {
+  width: 36px; height: 36px; border-radius: 8px; background: var(--primary-blue); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; overflow: hidden;
+}
+.jf-form-icon.has-logo { background: transparent; }
+.jf-form-logo { width: 100%; height: 100%; object-fit: contain; }
+.jf-title { font-size: 15px; font-weight: 600; color: #1f2b53; }
+.jf-badge { background: #e3effd; color: #3b82f6; font-size: 11px; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; font-weight: 500; }
+.jf-badge-muted { background: #e2e8f0; color: #64748b; font-size: 10px; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; }
+.jf-badge-danger { background: #fee2e2; color: #dc2626; font-size: 10px; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; }
+.jf-meta  { font-size: 12px; color: #66759b; margin-top: 1px; }
+.jf-actions { opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+.jf-actions.visible { opacity: 1; pointer-events: auto; }
+.jf-action-link {
+  color: #334155; font-weight: 700; font-size: 12px; text-decoration: none;
+  min-width: 34px; height: 34px; border: 1px solid #e2e8f0; border-radius: 10px;
+  background: #fff; white-space: nowrap; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.jf-action-link i { font-size: 14px; }
+.jf-btn-wide {
+  padding: 0 1.25rem;
+}
+.jf-action-link:hover { background: #f0f3f9; }
+.jf-action-link.text-danger { color: #dc3545 !important; border-color: #fecaca; }
+.jf-action-link.text-danger:hover { background: #fef2f2; }
+.jf-restore-link { color: #16a34a; border-color: #bbf7d0; padding: 0 1.25rem; }
+.jf-restore-link:hover { background: #f0fdf4; }
+.jf-dropdown {
+  position: absolute; top: 100%; right: 0; z-index: 200;
+  min-width: 170px; background: #fff; border: 1px solid #e0e6f3;
+  border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 6px 0; margin-top: 4px;
+}
+.jf-dd-item {
+  display: block; padding: 8px 14px; font-size: 13px; font-weight: 500;
+  color: #1f2b53; text-decoration: none; transition: background 0.12s;
+}
+.jf-dd-item:hover { background: #f5f7ff; }
+.jf-dd-item.text-danger { color: #dc3545 !important; }
+
+.jf-dd-submenu-parent { position: relative; }
+.jf-dd-submenu {
+  display: none; position: absolute; right: 100%; top: 0;
+  min-width: 170px; background: #fff; border: 1px solid #e0e6f3;
+  border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 6px 0; margin-left: 2px;
+}
+.jf-dd-submenu-parent:hover .jf-dd-submenu { display: block; }
+
+@media (max-width: 991.98px) {
+  .jf-form-row { padding: 12px 10px; min-height: 74px; }
+  .jf-actions { 
+    opacity: 1 !important; 
+    pointer-events: auto !important; 
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+  .jf-action-link { 
+    padding: 0 10px; 
+    height: 32px; 
+    font-size: 11px; 
+    border-radius: 8px;
+  }
+  .jf-btn-wide { min-width: 0; }
+  .jf-dropdown { right: -15px; min-width: 200px; max-width: calc(100vw - 30px); }
+  .jf-dd-submenu { position: static; width: 100%; box-shadow: none; border: none; padding-left: 20px; }
+  .jf-dd-submenu-parent:hover .jf-dd-submenu { display: block; }
+  .jf-title { font-size: 14px; max-width: 100px; }
+  .jf-meta { font-size: 11px; max-width: 100px; }
+  .jf-form-icon { width: 32px; height: 32px; font-size: 16px; margin-right: 10px !important; }
+}

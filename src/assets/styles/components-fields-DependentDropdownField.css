@@ -1,0 +1,66 @@
+.child-dropdown-group {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #dbe5f5;
+  border-radius: 10px;
+  background: #f8fbff;
+}
+
+.fill-child-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #415277;
+}
+
+.fill-input {
+  width: 100%;
+  border: 1px solid #d0d5e0;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: #2c3345;
+  background: #fff;
+}
+
+.child-fill-input:disabled {
+  background: #edf2f9;
+  color: #8a94aa;
+  cursor: not-allowed;
+}
+
+.other-field-wrap {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.other-field-label {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a2547;
+  white-space: nowrap;
+}
+
+.child-other-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  border-bottom: 1px solid #d1d5db;
+  border-radius: 0;
+  background: transparent;
+  outline: none;
+  padding: 4px 0 6px;
+  font-size: 14px;
+  color: #1a2547;
+  cursor: text;
+}
+
+.child-other-input:focus {
+  border-bottom-color: var(--primary-blue);
+}
