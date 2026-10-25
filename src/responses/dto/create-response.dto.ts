@@ -1,10 +1,17 @@
-import { IsEmail, IsObject, IsOptional } from 'class-validator';
+﻿import { IsObject } from 'class-validator';
+
+export interface UploadedAnswer {
+  name: string;
+  data: string;
+}
+
+export interface SubmittedField {
+  label: string;
+  type: string;
+  value: string | number | boolean | null | UploadedAnswer | UploadedAnswer[];
+}
 
 export class CreateResponseDto {
-  @IsOptional()
-  @IsEmail()
-  respondentEmail?: string;
-
   @IsObject()
-  answers!: Record<string, any>;
+  formData!: Record<string, SubmittedField>;
 }

@@ -1,3 +1,4 @@
+import type { CreateResponseDto, SubmittedField, UploadedAnswer } from './dto/create-response.dto';
 import {
   BadRequestException,
   ForbiddenException,
@@ -25,120 +26,70 @@ export class ResponsesService {
 
   async submit(
     identifier: string,
-    dto: {
-      respondentEmail?: string;
-      answers: Record<string, any>;
-      formData?: Record<string, { label: string; value: any }>;
-    },
+    dto: CreateResponseDto,
   ) {
     const form = /^\d+$/.test(identifier)
       ? null
-      : await this.forms.findOne({ where: { shareToken: identifier } });
-
+      : await this.forms.findOne({ 
+          where: { shareToken: identifier },
+          relations: ['settings', 'attendance'] 
+        });
     if (!form)
       throw new NotFoundException('Form not found');
-
     const formId = form.id;
-
     const now = new Date();
     if (form.status === 'disabled') {
       throw new BadRequestException('Form is currently disabled');
     }
-
-    // ── Check Expiration Date/Time ──
     if (form.status === 'disable_date' || form.status === 'disable_both') {
-      if (form.expirationAt) {
-        const expDate = new Date(form.expirationAt);
+      if (form.settings?.expirationAt) {
+        const expDate = new Date(form.settings?.expirationAt);
         if (now > expDate) {
           throw new BadRequestException('Form has reached its expiration date');
         }
       }
     }
-
-    // ── Check Submission Limit ──
     if (form.status === 'disable_limit' || form.status === 'disable_both') {
-      if (form.submissionLimit) {
+      if (form.settings?.submissionLimit) {
         const count = await this.responses.count({ where: { formId } });
-        if (count >= form.submissionLimit) {
+        if (count >= form.settings?.submissionLimit) {
           throw new BadRequestException('Form has reached its submission limit');
         }
       }
     }
-
-    if (form.submissionStartTime && now < new Date(form.submissionStartTime)) {
+    if (form.settings?.submissionStartTime && now < new Date(form.settings?.submissionStartTime)) {
       throw new BadRequestException('Form is not open for submissions yet');
     }
-    if (form.submissionEndTime && now > new Date(form.submissionEndTime)) {
+    if (form.settings?.submissionEndTime && now > new Date(form.settings?.submissionEndTime)) {
       throw new BadRequestException('Form submission deadline has passed');
     }
-
-    const answers = dto.answers as Record<string, any>;
-    const uploadDir = path.join(process.cwd(), 'uploads', String(formId), 'responses');
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    if (answers && typeof answers === 'object') {
-      for (const [key, val] of Object.entries(answers)) {
-        if (
-          typeof val === 'string' &&
-          val.startsWith('{') &&
-          val.includes('"data":"data:')
-        ) {
-          try {
-            const parsed = JSON.parse(val);
-            if (parsed.name && parsed.data && parsed.data.startsWith('data:')) {
-              const base64Parts = parsed.data.split('base64,');
-              if (base64Parts.length === 2) {
-                const ext = parsed.name.includes('.')
-                  ? parsed.name.split('.').pop()
-                  : 'bin';
-                const filename = `${crypto.randomBytes(16).toString('hex')}.${ext}`;
-                const buffer = Buffer.from(base64Parts[1], 'base64');
-                await fs.writeFile(path.join(uploadDir, filename), buffer);
-                answers[key] = JSON.stringify({
-                  fileUrl: `/uploads/${formId}/responses/${filename}`,
-                  fileName: parsed.name || filename,
-                });
-              }
-            }
-          } catch {
-          }
-        }
+    this.validateFormData(form, dto.formData);
+    const formData: Record<string, { label: string; value: unknown }> = {};
+    for (const [key, entry] of Object.entries(dto.formData)) {
+      let value: unknown = entry.value;
+      if ((entry.type === 'fileupload' || entry.type === 'image') && entry.value) {
+        const uploadedFiles = Array.isArray(entry.value) ? entry.value : [entry.value as UploadedAnswer];
+        const savedFiles = await Promise.all(uploadedFiles.map(file => this.saveUploadedFile(formId, file)));
+        value = Array.isArray(entry.value) ? JSON.stringify(savedFiles.map(saved => JSON.parse(saved))) : savedFiles[0];
       }
+      formData[key] = { label: entry.label, value };
     }
-
-    const formData = dto.formData || null;
-
-    // Persist file paths in formData so the table view has them
-    if (formData && answers) {
-      for (const [key, val] of Object.entries(answers)) {
-        if (formData[key] && typeof val === 'string' && val.includes('"fileUrl":')) {
-          formData[key].value = val;
-        }
-      }
-    }
-
     const entity = this.responses.create({
       formId,
       formData: formData,
       status: 'pending',
       scanLogs: [],
-
-      qrToken: crypto.randomBytes(32).toString('hex'),
+      qrToken: null,
     });
-
     const saved = await this.responses.save(entity);
-
-
-    const qrToken = this.attendanceService.generateQRToken(
-      saved.id,
-      formId,
-      form,
-    );
-
-
-    saved.qrToken = qrToken;
-    await this.responses.save(saved);
-
+    if (form.attendance?.attendanceEnabled) {
+      saved.qrToken = this.attendanceService.generateQRToken(
+        saved.id,
+        formId,
+        form,
+      );
+      await this.responses.save(saved);
+    }
     return {
       id: saved.id,
       formId: saved.formId,
@@ -149,6 +100,96 @@ export class ResponsesService {
     };
   }
 
+
+  private validateFormData(form: FormEntity, formData: Record<string, SubmittedField>): void {
+    if (!formData || typeof formData !== 'object' || Array.isArray(formData)) {
+      throw new BadRequestException('formData must be an object');
+    }
+
+    let pages = form.pages;
+    if (typeof pages === 'string') {
+      try {
+        pages = JSON.parse(pages);
+      } catch {
+        throw new BadRequestException('The saved form structure is invalid');
+      }
+    }
+    if (!Array.isArray(pages)) {
+      throw new BadRequestException('The saved form structure is invalid');
+    }
+
+    const fields = new Map<string, { type: string; label?: string }>();
+    for (const page of pages) {
+      if (!Array.isArray(page?.elements)) continue;
+      for (const field of page.elements) {
+        if (field && field.type !== 'heading' && field.type !== 'logobanner') {
+          fields.set('el_' + field.id, field);
+        }
+      }
+    }
+
+    for (const [key, entry] of Object.entries(formData)) {
+      const field = fields.get(key);
+      if (!field) throw new BadRequestException('Unknown form field: ' + key);
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+        throw new BadRequestException('Invalid answer for ' + key);
+      }
+      if (entry.type !== field.type || typeof entry.label !== 'string') {
+        throw new BadRequestException('Invalid field type or label for ' + key);
+      }
+      // Use the server's label, rather than trusting a label sent by the browser.
+      entry.label = field.label || field.type;
+
+      if (field.type === 'fileupload' || field.type === 'image') {
+        if (entry.value === '' || entry.value === null) continue;
+        if (Array.isArray(entry.value)) {
+          if (!entry.value.length) {
+            throw new BadRequestException('An uploaded file list cannot be empty');
+          }
+          entry.value.forEach(file => this.validateUploadedFile(file));
+        }
+        else {
+          this.validateUploadedFile(entry.value);
+        }
+      } else {
+        const valueType = typeof entry.value;
+        if (entry.value !== null && valueType !== 'string' && valueType !== 'number' && valueType !== 'boolean') {
+          throw new BadRequestException('Invalid answer value for ' + key);
+        }
+      }
+    }
+  }
+
+  private validateUploadedFile(value: SubmittedField['value']): void {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      throw new BadRequestException('An uploaded file must contain its name and data');
+    }
+    if (typeof value.name !== 'string' || !value.name.trim() || typeof value.data !== 'string') {
+      throw new BadRequestException('An uploaded file must contain its name and data');
+    }
+    const match = value.data.match(/^data:[^;,]+;base64,([A-Za-z0-9+/]*={0,2})$/);
+    if (!match || match[1] === undefined) throw new BadRequestException('Invalid uploaded file data');
+    const content = Buffer.from(match[1], 'base64');
+    if (content.toString('base64') !== match[1]) {
+      throw new BadRequestException('Invalid uploaded file data');
+    }
+  }
+
+  private async saveUploadedFile(formId: number, file: UploadedAnswer): Promise<string> {
+    const encoded = file.data.slice(file.data.indexOf(',') + 1);
+    const content = Buffer.from(encoded, 'base64');
+    const extension = path.extname(file.name).toLowerCase();
+    const safeExtension = /^\.[a-z0-9]{1,10}$/.test(extension) ? extension : '.bin';
+    const filename = crypto.randomBytes(16).toString('hex') + safeExtension;
+    const uploadDir = path.join(process.cwd(), 'uploads', String(formId), 'responses');
+    await fs.mkdir(uploadDir, { recursive: true });
+    await fs.writeFile(path.join(uploadDir, filename), content);
+    // Existing response views expect this metadata as a JSON string.
+    return JSON.stringify({
+      fileUrl: '/uploads/' + formId + '/responses/' + filename,
+      fileName: file.name,
+    });
+  }
 
   async listForOwner(ownerId: number, formId: number) {
     const form = await this.forms.findOne({ where: { id: formId } });

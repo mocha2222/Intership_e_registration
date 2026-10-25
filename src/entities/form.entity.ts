@@ -5,6 +5,7 @@ import {
   Index,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -12,6 +13,8 @@ import { UserEntity } from './user.entity';
 import { FormResponseEntity } from './form-response.entity';
 import { FormMaterialEntity } from './form-material.entity';
 import { FolderEntity } from './folder.entity';
+import { FormSettingEntity } from './form-setting.entity';
+import { FormAttendanceEntity } from './form-attendance.entity';
 
 @Entity('forms')
 export class FormEntity {
@@ -67,24 +70,6 @@ export class FormEntity {
   type!: string;
 
   @Column({ type: 'boolean', default: false })
-  attendanceEnabled!: boolean;
-
-  @Column({ type: 'datetime', nullable: true })
-  submissionStartTime!: Date | null;
-
-  @Column({ type: 'datetime', nullable: true })
-  submissionEndTime!: Date | null;
-
-  @Column({ type: 'datetime', nullable: true })
-  eventStartTime!: Date | null;
-
-  @Column({ type: 'datetime', nullable: true })
-  eventEndTime!: Date | null;
-
-  @Column({ type: 'datetime', nullable: true })
-  attendanceCloseTime!: Date | null;
-
-  @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;
 
   @Column({ type: 'boolean', default: false })
@@ -93,17 +78,11 @@ export class FormEntity {
   @Column({ type: 'datetime', nullable: true })
   trashedAt!: Date | null;
 
-  @Column({ type: 'varchar', length: 30, default: 'submit_and_view' })
-  permissionMode!: string;
+  @OneToOne(() => FormSettingEntity, s => s.form)
+  settings!: FormSettingEntity;
 
-  @Column({ type: 'boolean', default: false })
-  materialUploadEnabled!: boolean;
-
-  @Column({ type: 'datetime', nullable: true })
-  expirationAt!: Date | null;
-
-  @Column({ type: 'int', nullable: true })
-  submissionLimit!: number | null;
+  @OneToOne(() => FormAttendanceEntity, a => a.form)
+  attendance!: FormAttendanceEntity;
 
   @OneToMany(() => FormResponseEntity, (r) => r.form)
   responses!: FormResponseEntity[];

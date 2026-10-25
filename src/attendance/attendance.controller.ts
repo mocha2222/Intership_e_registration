@@ -43,18 +43,14 @@ export class AttendanceController {
     @Req() req: Request,
   ) {
     const payload = this.attendanceService.verifyQRToken(dto.token);
-
     const response = await this.responsesRepository.findOne({
       where: { id: payload.responseId },
-      relations: ['form'],
+      relations: ['form', 'form.attendance'],
     });
-
     if (!response || !response.form) {
       throw new NotFoundException('Response not found');
     }
-
     const form = response.form;
-
     if (form.ownerId !== user.userId) {
       throw new ForbiddenException(
         'Only the form creator can check-in responses',
@@ -64,14 +60,12 @@ export class AttendanceController {
       userAgent: req.get?.('user-agent'),
       ipAddress: req.ip || req.socket?.remoteAddress,
     };
-
     const result = await this.attendanceService.processCheckIn(
       response,
       form,
       new Date(),
       deviceInfo,
     );
-
     return this.formatCheckinResult(response, result);
   }
 
@@ -91,8 +85,9 @@ export class AttendanceController {
     const responses = await this.responsesRepository
       .createQueryBuilder('response')
       .innerJoinAndSelect('response.form', 'form')
+      .leftJoinAndSelect('form.attendance', 'attendance')
       .where('form.ownerId = :ownerId', { ownerId: user.userId })
-      .andWhere('form.attendanceEnabled = :attendanceEnabled', {
+      .andWhere('attendance.attendanceEnabled = :attendanceEnabled', {
         attendanceEnabled: true,
       })
       .orderBy('response.submittedAt', 'DESC')
@@ -138,6 +133,7 @@ export class AttendanceController {
   ) {
     const form = await this.formsRepository.findOne({
       where: { id: parseInt(formId) },
+      relations: ['attendance'],
     });
     if (!form) throw new NotFoundException('Form not found');
     if (form.ownerId !== user.userId) {
@@ -180,9 +176,9 @@ export class AttendanceController {
       form: {
         id: form.id,
         title: form.title,
-        eventStartTime: form.eventStartTime,
-        eventEndTime: form.eventEndTime,
-        attendanceCloseTime: form.attendanceCloseTime,
+        eventStartTime: form.attendance?.eventStartTime,
+        eventEndTime: form.attendance?.eventEndTime,
+        attendanceCloseTime: form.attendance?.attendanceCloseTime,
       },
       stats,
       responses: report,
@@ -198,6 +194,7 @@ export class AttendanceController {
   ) {
     const form = await this.formsRepository.findOne({
       where: { id: parseInt(formId) },
+      relations: ['attendance'],
     });
     if (!form) throw new NotFoundException('Form not found');
     if (form.ownerId !== user.userId) {

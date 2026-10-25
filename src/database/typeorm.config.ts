@@ -6,6 +6,8 @@ import { FormResponseEntity } from '../entities/form-response.entity';
 import { UserEntity } from '../entities/user.entity';
 import { FolderEntity } from '../entities/folder.entity';
 import { FormMaterialEntity } from '../entities/form-material.entity';
+import { FormSettingEntity } from '../entities/form-setting.entity';
+import { FormAttendanceEntity } from '../entities/form-attendance.entity';
 
 export function typeormConfig(
   config: ConfigService,
@@ -17,7 +19,7 @@ export function typeormConfig(
     username: config.getOrThrow<string>('DB_USERNAME'),
     password: config.getOrThrow<string>('DB_PASSWORD'),
     database: config.getOrThrow<string>('DB_DATABASE'),
-    entities: [UserEntity, FormEntity, FormResponseEntity, FolderEntity, FormMaterialEntity],
+    entities: [UserEntity, FormEntity, FormResponseEntity, FolderEntity, FormMaterialEntity, FormSettingEntity, FormAttendanceEntity],
     autoLoadEntities: false,
     synchronize: false,
     migrationsRun: true,

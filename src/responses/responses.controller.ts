@@ -1,3 +1,4 @@
+import { CreateResponseDto } from './dto/create-response.dto';
 import {
   Controller,
   Post,
@@ -20,12 +21,7 @@ export class ResponsesController {
   @Post(':shareToken')
   async submit(
     @Param('shareToken') shareToken: string,
-    @Body()
-    body: {
-      respondentEmail?: string;
-      answers: Record<string, any>;
-      formData?: Record<string, { label: string; value: any }>;
-    },
+    @Body() body: CreateResponseDto,
   ) {
     return await this.responsesService.submit(shareToken, body);
   }

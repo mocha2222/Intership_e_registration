@@ -86,22 +86,22 @@ export class AttendanceService {
     form: FormEntity,
     currentTime: Date = new Date(),
   ): AttendanceStatus {
-    if (!form.eventEndTime && !form.attendanceCloseTime) {
+    if (!form.attendance?.eventEndTime && !form.attendance?.attendanceCloseTime) {
       // No timing configured → default to present
       return 'present';
     }
 
     const scanTime = new Date(currentTime);
 
-    if (form.attendanceCloseTime) {
-      const closeTime = new Date(form.attendanceCloseTime);
+    if (form.attendance?.attendanceCloseTime) {
+      const closeTime = new Date(form.attendance.attendanceCloseTime);
       if (scanTime > closeTime) {
         return 'rejected';
       }
     }
 
-    if (form.eventEndTime) {
-      const lateDeadline = new Date(form.eventEndTime);
+    if (form.attendance?.eventEndTime) {
+      const lateDeadline = new Date(form.attendance.eventEndTime);
       if (scanTime > lateDeadline) {
         return 'late';
       }
@@ -123,7 +123,7 @@ export class AttendanceService {
     message: string;
   }> {
 
-    if (!form.attendanceEnabled) {
+    if (!form.attendance?.attendanceEnabled) {
       throw new BadRequestException('Attendance tracking is not enabled for this form');
     }
 
@@ -209,8 +209,8 @@ export class AttendanceService {
     }
 
     if (
-      form.attendanceCloseTime &&
-      currentTime > new Date(form.attendanceCloseTime)
+      form.attendance?.attendanceCloseTime &&
+      currentTime > new Date(form.attendance.attendanceCloseTime)
     ) {
       return 'absent';
     }
@@ -222,9 +222,9 @@ export class AttendanceService {
     form: FormEntity,
     currentTime: Date = new Date(),
   ): Promise<number> {
-    if (!form.attendanceCloseTime) return 0;
+    if (!form.attendance?.attendanceCloseTime) return 0;
 
-    const closeTime = new Date(form.attendanceCloseTime);
+    const closeTime = new Date(form.attendance.attendanceCloseTime);
     if (currentTime <= closeTime) return 0;
 
     const result = await this.responsesRepository.update(

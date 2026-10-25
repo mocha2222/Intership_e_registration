@@ -7,6 +7,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, LessThan, Not, Repository } from 'typeorm';
 import { FormEntity } from '../entities/form.entity';
+import { FormSettingEntity } from '../entities/form-setting.entity';
+import { FormAttendanceEntity } from '../entities/form-attendance.entity';
 import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import * as fs from 'fs/promises';
@@ -18,6 +20,10 @@ export class FormsService {
   constructor(
     @InjectRepository(FormEntity)
     private readonly forms: Repository<FormEntity>,
+    @InjectRepository(FormSettingEntity)
+    private readonly settings: Repository<FormSettingEntity>,
+    @InjectRepository(FormAttendanceEntity)
+    private readonly attendance: Repository<FormAttendanceEntity>,
   ) { }
 
   private generateShareToken(): string {
@@ -45,10 +51,29 @@ export class FormsService {
         pageBgImage: '',
         formBgImage: '',
       },
-      permissionMode: dto.permissionMode ?? 'submit_and_view',
-      expirationAt: dto.expirationAt ? new Date(dto.expirationAt) : null,
     });
-    return await this.forms.save(entity);
+    const savedForm = await this.forms.save(entity);
+    const settingsEntity = this.settings.create({
+      formId: savedForm.id,
+      submissionStartTime: dto.settings?.submissionStartTime ?? null,
+      submissionEndTime: dto.settings?.submissionEndTime ?? null,
+      permissionMode: dto.settings?.permissionMode ?? 'submit_and_view',
+      materialUploadEnabled: dto.settings?.materialUploadEnabled ?? false,
+      expirationAt: dto.settings?.expirationAt ?? null,
+      submissionLimit: dto.settings?.submissionLimit ?? null,
+    });
+    await this.settings.save(settingsEntity);
+    if (dto.attendance) {
+      const attendanceEntity = this.attendance.create({
+        formId: savedForm.id,
+        attendanceEnabled: dto.attendance.attendanceEnabled ?? false,
+        eventStartTime: dto.attendance.eventStartTime ?? null,
+        eventEndTime: dto.attendance.eventEndTime ?? null,
+        attendanceCloseTime: dto.attendance.attendanceCloseTime ?? null,
+      });
+      await this.attendance.save(attendanceEntity);
+    }
+    return await this.getMine(ownerId, savedForm.id);
   }
 
   async listMine(
@@ -57,6 +82,8 @@ export class FormsService {
   ) {
     const qb = this.forms
       .createQueryBuilder('f')
+      .leftJoinAndSelect('f.settings', 'settings')
+      .leftJoinAndSelect('f.attendance', 'attendance')
       .where('f.ownerId = :ownerId', { ownerId });
 
     switch (filter) {
@@ -85,7 +112,10 @@ export class FormsService {
   }
 
   async getMine(ownerId: number, id: number) {
-    const form = await this.forms.findOne({ where: { id } });
+    const form = await this.forms.findOne({ 
+      where: { id },
+      relations: ['settings', 'attendance']
+    });
     if (!form) throw new NotFoundException('Form not found');
     if (form.ownerId !== ownerId) throw new ForbiddenException('Not allowed');
     return form;
@@ -111,7 +141,10 @@ export class FormsService {
   ): Promise<FormEntity | null> {
     if (/^\d+$/.test(identifier)) return null;
 
-    const form = await this.forms.findOne({ where: { shareToken: identifier } });
+    const form = await this.forms.findOne({ 
+      where: { shareToken: identifier },
+      relations: ['settings', 'attendance']
+    });
     if (!form) return null;
     return form;
   }
@@ -264,74 +297,75 @@ export class FormsService {
     }
     if (dto.isFavorite !== undefined) form.isFavorite = dto.isFavorite;
     if (dto.isArchived !== undefined) form.isArchived = dto.isArchived;
-    if (dto.permissionMode !== undefined)
-      form.permissionMode = dto.permissionMode;
+    if (dto.settings) {
+      if (!form.settings) {
+        form.settings = this.settings.create({ formId: form.id });
+      }
+      if (dto.settings.permissionMode !== undefined) form.settings.permissionMode = dto.settings.permissionMode;
+      if (dto.settings.submissionStartTime !== undefined) {
+        form.settings.submissionStartTime = dto.settings.submissionStartTime ?? null;
+      }
+      if (dto.settings.submissionEndTime !== undefined) {
+        form.settings.submissionEndTime = dto.settings.submissionEndTime ?? null;
+      }
+      if (dto.settings.materialUploadEnabled !== undefined) {
+        form.settings.materialUploadEnabled = dto.settings.materialUploadEnabled;
+      }
+      if (dto.settings.expirationAt !== undefined) {
+        form.settings.expirationAt = dto.settings.expirationAt ?? null;
+      }
+      if (dto.settings.submissionLimit !== undefined) {
+        form.settings.submissionLimit = dto.settings.submissionLimit;
+      }
+      await this.settings.save(form.settings);
+    }
 
-    // ── Attendance ──
-    if (dto.attendanceEnabled !== undefined)
-      form.attendanceEnabled = dto.attendanceEnabled;
-
-    // ── Submission Timing ──
-    if (dto.submissionStartTime !== undefined)
-      form.submissionStartTime = dto.submissionStartTime
-        ? new Date(dto.submissionStartTime)
-        : null;
-    if (dto.submissionEndTime !== undefined)
-      form.submissionEndTime = dto.submissionEndTime
-        ? new Date(dto.submissionEndTime)
-        : null;
-
-    // ── Attendance Timing ──
-    if (dto.eventStartTime !== undefined)
-      form.eventStartTime = dto.eventStartTime
-        ? new Date(dto.eventStartTime)
-        : null;
-    if (dto.eventEndTime !== undefined)
-      form.eventEndTime = dto.eventEndTime
-        ? new Date(dto.eventEndTime)
-        : null;
-    if (dto.attendanceCloseTime !== undefined)
-      form.attendanceCloseTime = dto.attendanceCloseTime
-        ? new Date(dto.attendanceCloseTime)
-        : null;
+    if (dto.attendance) {
+      if (!form.attendance) {
+        form.attendance = this.attendance.create({ formId: form.id });
+      }
+      if (dto.attendance.attendanceEnabled !== undefined) {
+        form.attendance.attendanceEnabled = dto.attendance.attendanceEnabled;
+      }
+      if (dto.attendance.eventStartTime !== undefined) {
+        form.attendance.eventStartTime = dto.attendance.eventStartTime ?? null;
+      }
+      if (dto.attendance.eventEndTime !== undefined) {
+        form.attendance.eventEndTime = dto.attendance.eventEndTime ?? null;
+      }
+      if (dto.attendance.attendanceCloseTime !== undefined) {
+        form.attendance.attendanceCloseTime = dto.attendance.attendanceCloseTime ?? null;
+      }
+      await this.attendance.save(form.attendance);
+    }
 
     // ── Time Range Validation ──
     if (
-      form.submissionStartTime &&
-      form.submissionEndTime &&
-      form.submissionEndTime < form.submissionStartTime
+      form.settings?.submissionStartTime &&
+      form.settings?.submissionEndTime &&
+      new Date(form.settings.submissionEndTime) < new Date(form.settings.submissionStartTime)
     ) {
       throw new BadRequestException('Submission end time must be after start time');
     }
 
-    if (form.attendanceEnabled) {
+    if (form.attendance?.attendanceEnabled) {
       if (
-        form.eventStartTime &&
-        form.eventEndTime &&
-        form.eventEndTime < form.eventStartTime
+        form.attendance.eventStartTime &&
+        form.attendance.eventEndTime &&
+        new Date(form.attendance.eventEndTime) < new Date(form.attendance.eventStartTime)
       ) {
         throw new BadRequestException('Event end time must be after start time');
       }
       if (
-        form.eventEndTime &&
-        form.attendanceCloseTime &&
-        form.attendanceCloseTime < form.eventEndTime
+        form.attendance.eventEndTime &&
+        form.attendance.attendanceCloseTime &&
+        new Date(form.attendance.attendanceCloseTime) < new Date(form.attendance.eventEndTime)
       ) {
         throw new BadRequestException(
           'Attendance close time must be at or after event end time',
         );
       }
     }
-
-    // ── Material Upload ──
-    if (dto.materialUploadEnabled !== undefined)
-      form.materialUploadEnabled = dto.materialUploadEnabled;
-
-    // ── Status Expiration & Limits ──
-    if (dto.expirationAt !== undefined) {
-      form.expirationAt = dto.expirationAt ? new Date(dto.expirationAt) : null;
-    }
-    if (dto.submissionLimit !== undefined) form.submissionLimit = dto.submissionLimit;
 
     return await this.forms.save(form);
   }

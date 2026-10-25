@@ -35,8 +35,8 @@ export class FormResponseEntity {
   form!: FormEntity;
 
   @Index()
-  @Column({ type: 'varchar', length: 255 })
-  qrToken!: string;
+  @Column({ type: 'varchar', length: 500, nullable: true })
+  qrToken!: string | null;
 
   @Column({ type: 'json', nullable: true })
   formData!: Record<

@@ -8,7 +8,54 @@ import {
   MaxLength,
   IsArray,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class FormSettingsDto {
+  @IsOptional()
+  @IsString()
+  submissionStartTime?: string;
+
+  @IsOptional()
+  @IsString()
+  submissionEndTime?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['submit_only', 'submit_and_view'])
+  permissionMode?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  materialUploadEnabled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  expirationAt?: string;
+
+  @IsOptional()
+  @IsInt()
+  submissionLimit?: number;
+}
+
+export class FormAttendanceDto {
+  @IsOptional()
+  @IsBoolean()
+  attendanceEnabled?: boolean;
+
+  @IsOptional()
+  @IsString()
+  eventStartTime?: string;
+
+  @IsOptional()
+  @IsString()
+  eventEndTime?: string;
+
+  @IsOptional()
+  @IsString()
+  attendanceCloseTime?: string;
+}
 
 export class CreateFormDto {
   @IsString()
@@ -66,11 +113,12 @@ export class CreateFormDto {
   design?: Record<string, any>;
 
   @IsOptional()
-  @IsString()
-  @IsIn(['submit_only', 'submit_and_view'])
-  permissionMode?: string;
+  @ValidateNested()
+  @Type(() => FormSettingsDto)
+  settings?: FormSettingsDto;
 
   @IsOptional()
-  @IsString()
-  expirationAt?: string;
+  @ValidateNested()
+  @Type(() => FormAttendanceDto)
+  attendance?: FormAttendanceDto;
 }

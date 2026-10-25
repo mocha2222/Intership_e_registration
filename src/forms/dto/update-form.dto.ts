@@ -8,7 +8,10 @@ import {
   MaxLength,
   IsArray,
   Min,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { FormSettingsDto, FormAttendanceDto } from './create-form.dto';
 
 export class UpdateFormDto {
   @IsOptional()
@@ -75,47 +78,12 @@ export class UpdateFormDto {
   type?: string;
 
   @IsOptional()
-  @IsString()
-  @IsIn(['submit_only', 'submit_and_view'])
-  permissionMode?: string;
-
-  // ── Attendance ──
-  @IsOptional()
-  @IsBoolean()
-  attendanceEnabled?: boolean;
-
-  // ── Submission Timing (ALL forms) ──
-  @IsOptional()
-  @IsString()
-  submissionStartTime?: string | null;
+  @ValidateNested()
+  @Type(() => FormSettingsDto)
+  settings?: FormSettingsDto;
 
   @IsOptional()
-  @IsString()
-  submissionEndTime?: string | null;
-
-  // ── Attendance Timing (only when attendanceEnabled) ──
-  @IsOptional()
-  @IsString()
-  eventStartTime?: string | null;
-
-  @IsOptional()
-  @IsString()
-  eventEndTime?: string | null;
-
-  @IsOptional()
-  @IsString()
-  attendanceCloseTime?: string | null;
-
-  // ── Material Upload ──
-  @IsOptional()
-  @IsBoolean()
-  materialUploadEnabled?: boolean;
-
-  @IsOptional()
-  @IsString()
-  expirationAt?: string | null;
-
-  @IsOptional()
-  @IsInt()
-  submissionLimit?: number | null;
+  @ValidateNested()
+  @Type(() => FormAttendanceDto)
+  attendance?: FormAttendanceDto;
 }
